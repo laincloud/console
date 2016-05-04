@@ -1,0 +1,29 @@
+appname: console
+
+build:
+  base: laincloud/centos-lain:20160503
+  prepare:
+    version: "1"
+    script:
+      - touch /sbin/modprobe && chmod +x /sbin/modprobe
+      - pip install -r pip-req.txt
+  script:
+    - pip install -r pip-req.txt
+    - mv externalbin /externalbin
+
+test:
+  script:
+    - mkdir logs
+    - make pylint test
+
+web:
+  cmd: ./entry.sh
+  port: 8000
+  memory: 256m
+  env:
+      - CONSOLE_APISERVER=http://deployd.lain:9003
+  persistent_dirs:
+    - /lain/app/logs
+
+notify:
+  slack: "#lain"

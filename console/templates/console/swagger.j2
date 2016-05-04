@@ -1,0 +1,1934 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "LAIN APP CONSOLE API 文档",
+        "version": "1.0.0",
+        "contact": {
+            "email": "yisun4@creditease.cn"
+        }
+    },
+    "host": "{{ server_name }}",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/repos/": {
+            "post": {
+                "summary": "注册应用",
+                "description": "注册一个新应用\n",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "需要注册的应用",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "appname": {
+                                    "$ref": "#/definitions/AppName"
+                                }
+                            },
+                            "required": [
+                                "appname"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "成功注册应用",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "repo": {
+                                    "$ref": "#/definitions/Repo"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "应用名冲突，同名应用已存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "获取注册应用列表",
+                "description": "获取当前已注册应用信息列表\n",
+                "responses": {
+                    "200": {
+                        "description": "成功获取已注册应用信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "repos": {
+                                    "$ref": "#/definitions/Repos"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{appname}/": {
+            "get": {
+                "summary": "获取应用信息",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取应用注册信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "repo": {
+                                    "$ref": "#/definitions/Repo"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{appname}/roles/": {
+            "get": {
+                "summary": "根据 header 中传入的 access-token 获取 App 某个 user 的 role",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "相应 user 的 role",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "role": {
+                                    "$ref": "#/definitions/Role"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "user 不存在 app 的用户列表中",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{appname}/roles/{username}": {
+            "get": {
+                "summary": "获取 App 某个 user 的 role",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "username",
+                        "required": true,
+                        "description": "用户名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "相应 user 的 role",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "role": {
+                                    "$ref": "#/definitions/Role"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "user 不存在 app 的用户列表中",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{appname}/maintainers/": {
+            "post": {
+                "summary": "增加维护者",
+                "description": "新增一个应用的维护者\n",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "新增维护者的账号和角色",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "$ref": "#/definitions/UserName"
+                                },
+                                "role": {
+                                    "$ref": "#/definitions/Role"
+                                }
+                            },
+                            "required": [
+                                "username",
+                                "role"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "成功添加一名维护者",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "maintainer": {
+                                    "$ref": "#/definitions/Maintainer"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "获得应用维护者信息",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取应用注册信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "maintainers": {
+                                    "$ref": "#/definitions/Maintainers"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{appname}/maintainers/{username}/": {
+            "get": {
+                "summary": "获取维护者信息",
+                "description": "获取一个应用的某个维护者信息\n",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "body",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "username",
+                        "required": true,
+                        "description": "维护者名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "应用某个维护者信息",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "maintainer": {
+                                    "$ref": "#/definitions/Maintainer"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "删除应用的某个维护者",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "username",
+                        "required": true,
+                        "description": "维护者名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "删除维护者成功",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用或者应用维护者不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/": {
+            "post": {
+                "summary": "部署已注册应用",
+                "description": "部署一个新应用\n",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "需要部署的应用",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "appname": {
+                                    "$ref": "#/definitions/AppName"
+                                }
+                            },
+                            "required": [
+                                "appname"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "成功创建应用",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "app": {
+                                    "$ref": "#/definitions/App"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "应用名冲突，同名应用已部署",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "获取已部署应用列表",
+                "description": "获取当前有权限的已部署应用信息列表，并附带定义和运行时信息\n",
+                "responses": {
+                    "200": {
+                        "description": "成功获取已部署应用信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "apps": {
+                                    "$ref": "#/definitions/Apps"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{appname}/": {
+            "get": {
+                "summary": "获取已部署应用信息",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取应用信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "app": {
+                                    "$ref": "#/definitions/App"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用尚未部署",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "升级/回滚应用版本",
+                "description": "部署指定版本的应用，如无指定版本，则默认为最新版本\n",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "部署目标版本",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "meta_version": {
+                                    "$ref": "#/definitions/MetaVersion"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "部署请求已成功接收",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "app": {
+                                    "$ref": "#/definitions/App"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "下线已部署应用",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "下线请求成功",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "repo": {
+                                    "$ref": "#/definitions/Repo"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{appname}/procs/": {
+            "post": {
+                "summary": "全新部署应用的某一个 Proc",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "需要创建的 Proc",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "procname": {
+                                    "$ref": "#/definitions/ProcName"
+                                }
+                            },
+                            "required": [
+                                "procname"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "成功部署 Proc",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "proc": {
+                                    "$ref": "#/definitions/Proc"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Proc 名冲突，同名 Proc 已存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "获取应用 Proc 信息列表",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取应用 Proc 信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "procs": {
+                                    "$ref": "#/definitions/Procs"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{appname}/procs/{procname}/": {
+            "get": {
+                "summary": "获取应用 Proc 信息",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "procname",
+                        "required": true,
+                        "description": "Proc 名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取应用 Proc 信息",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "proc": {
+                                    "$ref": "#/definitions/Proc"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用或 Proc 不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "调度应用 Proc scale",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "procname",
+                        "required": true,
+                        "description": "Proc 名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "description": "scale 目标 NumInstances",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "num_instances": {
+                                    "$ref": "#/definitions/NumInstances"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "成功接收应用 Proc 的 scale 信息",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "proc": {
+                                    "$ref": "#/definitions/Proc"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用或 Proc 不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "非法参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "删除应用 Proc 的部署",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appname",
+                        "required": true,
+                        "description": "应用名",
+                        "type": "string",
+                        "format": "slug"
+                    },
+                    {
+                        "in": "path",
+                        "name": "procname",
+                        "required": true,
+                        "description": "Proc 名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "成功接收应用 Proc 部署删除的请求",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "应用或 Proc 不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/{resourcename}/instances/": {
+            "get": {
+                "summary": "获取资源 Instance 信息列表",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "resourcename",
+                        "required": true,
+                        "description": "资源名",
+                        "type": "string",
+                        "format": "slug"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功获取资源 Instance 信息列表",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "instances": {
+                                    "$ref": "#/definitions/Instances"
+                                },
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "资源不存在",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "$ref": "#/definitions/Msg"
+                                },
+                                "url": {
+                                    "$ref": "#/definitions/Url"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "oauth": {
+            "type": "oauth2",
+            "flow": "accessCode",
+            "authorizationUrl": "https://sso.prod.bdp.cc/oauth2/auth",
+            "tokenUrl": "https://sso.prod.bdp.cc/oauth2/token",
+            "scopes": {
+            }
+        }
+    },
+    "definitions": {
+        "Repo": {
+            "type": "object",
+            "properties": {
+                "appname": {
+                    "$ref": "#/definitions/AppName"
+                },
+                "url": {
+                    "$ref": "#/definitions/Url"
+                }
+            }
+        },
+        "Repos": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Repo",
+                "description": "Repo list"
+            }
+        },
+        "Role": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "enum": [
+                    "admin",
+                    "normal"
+                  ]
+                }
+            }
+        },
+        "Maintainer": {
+            "type": "object",
+            "properties": {
+                "appname": {
+                    "$ref": "#/definitions/AppName"
+                },
+                "username": {
+                    "$ref": "#/definitions/UserName"
+                },
+                "role": {
+                    "$ref": "#/definitions/Role"
+                },
+                "url": {
+                    "$ref": "#/definitions/Url"
+                }
+            }
+        },
+        "Maintainers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Maintainer",
+                "description": "Maintainer list"
+            }
+        },
+        "App": {
+            "type": "object",
+            "properties": {
+                "appname": {
+                    "$ref": "#/definitions/AppName"
+                },
+                "apptype": {
+                    "$ref": "#/definitions/AppType"
+                },
+                "metaversion": {
+                    "$ref": "#/definitions/MetaVersion"
+                },
+                "updatetime": {
+                    "$ref": "#/definitions/UpdateTime"
+                },
+                "deployerror": {
+                    "$ref": "#/definitions/DeployError"
+                },
+                "procs": {
+                    "$ref": "#/definitions/Procs"
+                },
+                "portals": {
+                    "$ref": "#/definitions/Procs"
+                },
+                "useservices": {
+                    "$ref": "#/definitions/UseServices"
+                },
+                "useresources": {
+                    "$ref": "#/definitions/UseResources"
+                },
+                "resourceinstances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/App",
+                        "description": "Resource Instances"
+                    }
+                },
+                "url": {
+                    "$ref": "#/definitions/Url"
+                }
+            }
+        },
+        "Apps": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/App",
+                "description": "App list"
+            }
+        },
+        "MetaVersion": {
+            "type": "string",
+            "description": "App 版本",
+            "maxLength": 128
+        },
+        "UserName": {
+            "type": "string",
+            "description": "UserName 维护者名，与sso系统同步"
+        },
+        "Role": {
+            "type": "string",
+            "scopes": {
+                "admin": "可以修改维护者列表",
+                "normal": "不能修改维护者列表",
+                "": "效果同normal权限"
+            }
+        },
+        "AppName": {
+            "type": "string",
+            "description": "AppName 应用名",
+            "maxLength": 128
+        },
+        "UpdateTime": {
+            "type": "string",
+            "description": "App 在 etcd 中的数据被更新的时间"
+        },
+        "DeployError": {
+            "type": "string",
+            "description": "App 在部署过程中出现的错误信息"
+        },
+        "AppType": {
+            "type": "string",
+            "scopes": {
+                "app": "普通app",
+                "service": "包含portals的普通app",
+                "resource": "yaml中标记apptype为resource的app",
+                "resource-instance": "由resource的模版生成的app"
+            }
+        },
+        "ProcName": {
+            "type": "string",
+            "description": "Proc 名",
+            "maxLength": 128
+        },
+        "ProcType": {
+            "type": "string",
+            "description": "Proc 类型",
+            "maxLength": 16
+        },
+        "NumInstances": {
+            "type": "integer",
+            "description": "Proc 实例数"
+        },
+        "Cpu": {
+            "type": "integer",
+            "description": "Proc 的 cpu 需求"
+        },
+        "Memory": {
+            "type": "string",
+            "description": "Proc 的 Memory 需求",
+            "maxLength": 32
+        },
+        "Env": {
+            "type": "string",
+            "description": "Proc 的环境变量",
+            "maxLength": 128
+        },
+        "PersistentDir": {
+            "type": "string",
+            "description": "Proc 的持久化目录",
+            "maxLength": 128
+        },
+        "DnsSearch": {
+            "type": "string",
+            "description": "Proc 的搜索域",
+            "maxLength": 128
+        },
+        "MountPoint": {
+            "type": "string",
+            "description": "Web 类型 Proc 的服务挂载点",
+            "maxLength": 1024
+        },
+        "PortNumber": {
+            "type": "integer",
+            "description": "Port 端口号"
+        },
+        "PortType": {
+            "type": "string",
+            "description": "Port 类型",
+            "maxLength": 32
+        },
+        "Port": {
+            "type": "object",
+            "properties": {
+                "portnumber": {
+                    "$ref": "#/definitions/PortNumber"
+                },
+                "porttype": {
+                    "$ref": "#/definitions/PortType"
+                }
+            }
+        },
+        "ContainerName": {
+            "type": "string",
+            "description": "Proc Container Name",
+            "maxLength": 256
+        },
+        "ContainerId": {
+            "type": "string",
+            "description": "Proc Container Id",
+            "maxLength": 256
+        },
+        "SubEntryPoint": {
+            "type": "string",
+            "description": "Proc SubEntryPoint",
+            "maxLength": 256
+        },
+        "EntryPoint": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/SubEntryPoint",
+                "description": "Proc EntryPoint"
+            }
+        },
+        "SubCmd": {
+            "type": "string",
+            "description": "Proc subCmd of CMD",
+            "maxLength": 256
+        },
+        "Cmd": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/SubCmd",
+                "description": "Proc CMD"
+            }
+        },
+        "WorkingDir": {
+            "type": "string",
+            "description": "Proc Working Dir",
+            "maxLength": 256
+        },
+        "Image": {
+            "type": "string",
+            "description": "Proc Container Docker Image",
+            "maxLength": 256
+        },
+        "User": {
+            "type": "string",
+            "description": "Proc Container User",
+            "maxLength": 256
+        },
+        "ContainerIp": {
+            "type": "string",
+            "description": "Container Ip of Proc Container",
+            "maxLength": 64
+        },
+        "ContainerPort": {
+            "type": "integer",
+            "description": "Proc Container Port"
+        },
+        "NodeIp": {
+            "type": "string",
+            "description": "Node Ip of Proc Container",
+            "maxLength": 64
+        },
+        "Status": {
+            "type": "string",
+            "description": "Status of object",
+            "maxLength": 64
+        },
+        "Pod": {
+            "type": "object",
+            "properties": {
+                "containerid": {
+                    "$ref": "#/definitions/ContainerId"
+                },
+                "containername": {
+                    "$ref": "#/definitions/ContainerName"
+                },
+                "containerip": {
+                    "$ref": "#/definitions/ContainerIp"
+                },
+                "containerport": {
+                    "$ref": "#/definitions/ContainerPort"
+                },
+                "nodeip": {
+                    "$ref": "#/definitions/NodeIp"
+                },
+                "status": {
+                    "$ref": "#/definitions/Status"
+                },
+                "envs": {
+                    "$ref": "#/definitions/Envs"
+                }
+            }
+        },
+        "Pods": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Pod",
+                "description": "Proc Pods"
+            }
+        },
+        "Depends": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Pod",
+                "description": "Proc Depends"
+            }
+        },
+        "Proc": {
+            "type": "object",
+            "properties": {
+                "procname": {
+                    "$ref": "#/definitions/ProcName"
+                },
+                "proctype": {
+                    "$ref": "#/definitions/ProcType"
+                },
+                "image": {
+                    "$ref": "#/definitions/Image"
+                },
+                "numinstances": {
+                    "$ref": "#/definitions/NumInstances"
+                },
+                "cpu": {
+                    "$ref": "#/definitions/Cpu"
+                },
+                "memory": {
+                    "$ref": "#/definitions/Memory"
+                },
+                "persistentdirs": {
+                    "$ref": "#/definitions/PersistentDirs"
+                },
+                "dnssearchs": {
+                    "$ref": "#/definitions/DnsSearchs"
+                },
+                "ports": {
+                    "$ref": "#/definitions/Ports"
+                },
+                "mountpoints": {
+                    "$ref": "#/definitions/MountPoints"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "workingdir": {
+                    "$ref": "#/definitions/WorkingDir"
+                },
+                "entrypoint": {
+                    "$ref": "#/definitions/EntryPoint"
+                },
+                "cmd": {
+                    "$ref": "#/definitions/Cmd"
+                },
+                "envs": {
+                    "$ref": "#/definitions/Envs"
+                },
+                "pods": {
+                    "$ref": "#/definitions/Pods"
+                },
+                "depends": {
+                    "$ref": "#/definitions/Depends"
+                },
+                "url": {
+                    "$ref": "#/definitions/Url"
+                }
+            }
+        },
+        "Procs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Proc",
+                "description": "Proc list"
+            }
+        },
+        "UseService": {
+            "type": "object",
+            "properties": {
+                "servicename": {
+                    "$ref": "#/definitions/AppName"
+                },
+                "serviceprocs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ProcName",
+                        "description": "Service Proc Name"
+                    }
+                },
+                "service": {
+                    "$ref": "#/definitions/App"
+                }
+            }
+        },
+        "UseServices": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/UseService",
+                "description": "Use Service list"
+            }
+        },
+        "UseResource": {
+            "type": "object",
+            "properties": {
+                "resourcename": {
+                    "$ref": "#/definitions/AppName"
+                },
+                "resourceprocs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ProcName",
+                        "description": "Resource Proc Name"
+                    }
+                },
+                "resourceinstance": {
+                    "$ref": "#/definitions/App"
+                }
+            }
+        },
+        "UseResources": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/UseResource",
+                "description": "Use Resource list"
+            }
+        },
+        "Envs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Env",
+                "description": "Proc 环境变量列表"
+            }
+        },
+        "PersistentDirs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/PersistentDir",
+                "description": "Proc 持久化目录列表"
+            }
+        },
+        "DnsSearchs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/DnsSearch",
+                "description": "Proc Search Domain 列表"
+            }
+        },
+        "Ports": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Port",
+                "description": "Proc Port 列表"
+            }
+        },
+        "MountPoints": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/MountPoint",
+                "description": "Proc MountPoint 列表"
+            }
+        },
+        "Msg": {
+            "type": "string",
+            "description": "msg from backend",
+            "maxLength": 2048
+        },
+        "Slug": {
+            "type": "string",
+            "description": "全局唯一的名称",
+            "pattern": "[A-Za-z][A-Za-z0-9-]*",
+            "maxLength": 32
+        },
+        "Url": {
+            "type": "string",
+            "description": "following link",
+            "maxLength": 1024
+        }
+    }
+}

@@ -1,0 +1,17 @@
+unitTestResults/
+htmlcov/
+mymakefile
+lainconsole.sql
+.idea/
+.vagrant/
+.DS_Store
+*.swp
+*.pyc
+env/
+.ropeproject/
+.coverage
+/site/
+logs
+static
+src
+.cache/
