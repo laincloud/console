@@ -547,11 +547,12 @@ class AppApi:
                 app.appname, AuthApi.operater, target_meta_version))
 
         # bachup the former setting
-        origin_resource = app.lain_config.use_resources
         origin_app = copy.deepcopy(app)
+        origin_resource = {} if (app.lain_config is None) else app.lain_config.use_resources
 
         logger.info("ready update app %s" % app.appname)
-        if not app.update_meta(target_meta_version, force=True, update_spec=False):
+        if not app.update_meta(target_meta_version, force=True, 
+                               update_spec=(app.get_app_type() != AppType.Resource)):
             logger.error('error when loading meta_version %s for app %s' % (target_meta_version, app.appname))
             raise Exception('error when loading meta_version %s for app %s' % (target_meta_version, app.appname))
 
