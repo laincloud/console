@@ -193,7 +193,7 @@ class AppApi:
                 })
 
             for resource_appname, resource_info in app_lain_conf.use_resources.iteritems():
-                instance = App.get(resource_instance_name(resource_appname, app_lain_conf.appname))
+                instance = App.get_or_none(resource_instance_name(resource_appname, app_lain_conf.appname))
                 useresources.append({
                     'resourcename': resource_appname,
                     'resourceprocs': resource_info['services'],
