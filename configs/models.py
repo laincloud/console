@@ -75,6 +75,9 @@ class Config:
         if not success:
             cls.handle_error("error overlapping config image from tag %s to repo %s, version %s" % (
                 config_tag, target_repo, target_tag))
+        else:
+            logger.info("success overlapping config image from tag %s to repo %s, version %s" % (
+                config_tag, target_repo, target_tag))
 
     @classmethod
     def handle_error(cls, msg):

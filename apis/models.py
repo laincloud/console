@@ -11,9 +11,7 @@ from .specs import (
     AppType,
 )
 from commons.utils import (
-    get_cluster_host_network,
     docker_network_exists,
-    docker_network_add,
     docker_network_remove,
     calicoctl_profile_rule_op,
     add_calico_profile_for_app,
@@ -246,6 +244,7 @@ class App(BaseApp):
         return None, instance_deploy_success, instance_deploy_result
 
     def basic_app_deploy(self):
+        logger.info("deploy basic app : %s " % self.appname)
         proc_results = {}
         proc_deploy_success = {}
         proc_deploy_failed = {}
@@ -350,6 +349,7 @@ class App(BaseApp):
         return remove_result
 
     def basic_app_remove(self):
+        logger.info("remove basic app : %s " % self.appname)
         remove_results = {}
         remove_success_results = {}
         remove_failed_results = {}
@@ -401,6 +401,7 @@ class App(BaseApp):
 
     def podgroup_deploy(self, podgroup_spec, autopatch=True):
         # 单纯的不考虑 Dependency 的非 portal 类型 proc 部署
+        logger.info("deploy podgroup %s of app %s " % (podgroup_spec.Name, self.appname))
         now_status = self.podgroup_status(podgroup_spec.Name)
         for c in podgroup_spec.Pod.Containers:
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
@@ -420,6 +421,7 @@ class App(BaseApp):
             return self.default_deploy.patch_podgroup_spec(json_of_spec(podgroup_spec))
 
     def podgroup_scale(self, podgroup_spec):
+        logger.info("scale podgroup %s of app %s " % (podgroup_spec.Name, self.appname))
         now_status = self.podgroup_status(podgroup_spec.Name)
         for c in podgroup_spec.Pod.Containers:
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
@@ -432,6 +434,7 @@ class App(BaseApp):
             return self.default_deploy.patch_podgroup_instance(podgroup_spec.Name, podgroup_spec.NumInstances)
 
     def podgroup_remove(self, podgroup_name):
+        logger.info("remove podgroup %s of app %s " % (podgroup_name, self.appname))
         return self.default_deploy.remove_podgroup(podgroup_name)
 
     def dependency_register(self, service_app, service_appname, dependency_pod_name):

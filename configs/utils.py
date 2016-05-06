@@ -7,7 +7,7 @@ import requests
 import subprocess
 from docker import Client
 from commons.settings import (LVAULT_CONFIG_URL, DOCKER_BASE_URL,
-                           PRIVATE_REGISTRY, RFP_BIN)
+                              PRIVATE_REGISTRY, RFP_BIN)
 from log import logger
 
 
@@ -29,7 +29,7 @@ def get_config_content(access_token, appname, procname):
 
 def generate_tmp_folder():
     folder_name = str(uuid.uuid4())
-    logger.warning(folder_name)
+    logger.info("generate tmp folder : %s" % folder_name)
     path = os.path.join(CURRENT_FOLDER, CONFIG_FOLDER, folder_name)
     if not os.path.exists(path):
         os.makedirs(path)
@@ -38,7 +38,7 @@ def generate_tmp_folder():
 
 def validate_defined_secret_files(config_list, defined_secret_files):
     defined_config_list = [config for config in config_list
-                       if config.path in defined_secret_files]
+                           if config.path in defined_secret_files]
 
     if len(defined_config_list) == len(defined_secret_files):
         return True, defined_config_list
@@ -91,6 +91,9 @@ def push_config_image(appname, config_tag):
 
 
 def overlap_layer_to_image(appname, cfg_tag, cfg_layer_count, sjwt, target_repo, target_tag, tjwt):
+    logger.info("overlap %s:%s in %s to repo %s:%s in %s" % (
+        appname, cfg_tag, PRIVATE_REGISTRY, target_repo, target_tag, PRIVATE_REGISTRY))
+
     cmd = "%s -srcReg=%s -srcRepo=%s -srcTag=%s -srcLayerCount=%s -srcJWT=%s \
     	   -targetReg=%s -targetRepo=%s -targetTag=%s -targetJWT=%s -newTag=%s" % (
         RFP_BIN,
