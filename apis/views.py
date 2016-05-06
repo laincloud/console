@@ -197,7 +197,8 @@ class AppApi:
                 useresources.append({
                     'resourcename': resource_appname,
                     'resourceprocs': resource_info['services'],
-                    'resourceinstance' : AppApi.render_app(instance, iteration=False, client=app_lain_conf.appname)
+                    'resourceinstance' : {} if not instance or not instance.is_reachable() else
+                        AppApi.render_app(instance, iteration=False, client=app_lain_conf.appname)
                 })
             data['useservices'] = useservices
             data['useresources'] = useresources
