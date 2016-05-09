@@ -159,7 +159,7 @@
         },
         "/repos/{appname}/": {
             "get": {
-                "summary": "获取应用信息",
+                "summary": "获取注册应用信息",
                 "parameters": [
                     {
                         "in": "path",
@@ -655,8 +655,8 @@
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "成功创建应用",
+                    "202": {
+                        "description": "创建应用请求已接收",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -829,7 +829,7 @@
                     }
                 }
             },
-            "patch": {
+            "put": {
                 "summary": "升级/回滚应用版本",
                 "description": "部署指定版本的应用，如无指定版本，则默认为最新版本\n",
                 "parameters": [
@@ -981,7 +981,7 @@
         },
         "/apps/{appname}/procs/": {
             "post": {
-                "summary": "全新部署应用的某一个 Proc",
+                "summary": "部署应用的某一个 Proc",
                 "parameters": [
                     {
                         "in": "path",
@@ -1444,8 +1444,8 @@
         "oauth": {
             "type": "oauth2",
             "flow": "accessCode",
-            "authorizationUrl": "https://sso.prod.bdp.cc/oauth2/auth",
-            "tokenUrl": "https://sso.prod.bdp.cc/oauth2/token",
+            "authorizationUrl": "https://sso.lain.local/oauth2/auth",
+            "tokenUrl": "https://sso.lain.local/oauth2/token",
             "scopes": {
             }
         }
