@@ -324,7 +324,7 @@ class AppApi:
             t = Thread(target=cls._app_deploy_thread, args=(access_token, app, target_meta_version,))
             t.start()
 
-            return (201, AppApi.render_app(app), 'deploy request of app %s has been accepted.' % appname,
+            return (202, AppApi.render_app(app), 'deploy request of app %s has been accepted.' % appname,
                         reverse('api_app', kwargs={'appname': appname}))
         except InvalidMetaVersion, ime:
             return (500, None,
@@ -1003,7 +1003,7 @@ class MaintainApi:
             if access_token and not username:
                 username = Authorize.get_username(access_token)
             
-            success, role = Group.get_group_role(username, appname)
+            success, role = Group.get_user_role(username, appname)
             if success:
                 return (200, MaintainApi.render_role_data(appname, username, role), '',
                         reverse('api_role', kwargs={'appname': appname, 'username': username}) if not access_token else \
