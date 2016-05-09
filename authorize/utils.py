@@ -116,6 +116,13 @@ def get_group_info(appname):
     return send_request("GET", url, headers, None, None)
 
 
+def get_user_role(username, appname):
+    group_name = get_group_name_for_app(appname)
+    headers = {"Accept":"application/json"}
+    url = "%s/api/groups/%s/members/%s" %(global_sso_server, group_name, username)
+    return send_request("GET", url, headers, None, None)
+
+
 # FIXME: sso do not provide a specify api to verify one user,
 # use the first step of oauth2 temporarily
 def is_valid_user(username, password):

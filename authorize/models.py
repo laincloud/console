@@ -44,7 +44,7 @@ class Authorize:
                     info.username, info.password))
                 return False, 'the username or password may not be correct.'
             if info.appname:
-                succ, role = Group.get_group_role(info.username, info.appname)
+                succ, role = Group.get_user_role(info.username, info.appname)
                 if not succ:
                     logger.warning("requests from %s for %s not valid" % (
                         info.username, info.appname))
@@ -189,12 +189,16 @@ class Group(object):
             return False, "sso system wrong when getting group member for app %s" % appname
 
     @classmethod
-    def get_group_role(cls, username, appname):
-        success, members = cls.get_group_members(appname)
-        if success:
-            for member in members:
-                if member['name'] == username:
-                    return True, member['role']
-            return False, None
-        else:
+    def get_user_role(cls, username, appname):
+        try:
+            response = authorize.utils.get_user_role(username, appname)
+            if response.status_code != 200:
+                logger.warning("fail get role in group %s for user %s : %s" % (
+                    appname, username, response.text))
+                return False, None
+            else:
+                return True, response.json()['role']
+        except Exception, e:
+            logger.error('Exception get role in group %s for user %s : %s' % (
+                appname, username, str(e)))
             return False, None
