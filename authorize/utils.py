@@ -94,6 +94,14 @@ def add_group_member(access_token, appname, username, role):
     return send_request("PUT", url, headers, member_msg, None)
 
 
+def add_group_member_for_admin(access_token, appname, username, role):
+    group_name = get_group_name_for_app(appname)
+    member_msg = {'role' : role}
+    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}
+    url = "%s/api/groups/%s/group-members/%s" %(global_sso_server, group_name, username)
+    return send_request("PUT", url, headers, member_msg, None)
+
+
 def delete_group_member(access_token, appname, username):
     group_name = get_group_name_for_app(appname)
     headers = {"Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}

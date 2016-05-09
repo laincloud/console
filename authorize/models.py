@@ -100,7 +100,8 @@ class Group(object):
                 logger.warning("fail create group for app %s : %s" % (appname, response.text))
                 return False, "fail create group for app %s : %s" % (appname, response.text)
             else:
-                success, msg = Group.add_group_member(access_token, appname, LAIN_ADMIN_NAME, LAIN_ADMIN_ROLE)
+                success, msg = Group.add_group_member(access_token, appname, 
+                    LAIN_ADMIN_NAME, LAIN_ADMIN_ROLE, is_lain_admin=True)
                 if not success:
                     return False, msg
                 return True, "create group for app %s successfully" % appname
@@ -135,9 +136,11 @@ class Group(object):
             return False, "sso system wrong when creating group for resource instance %s" % instancename
         
     @classmethod
-    def add_group_member(cls, access_token, appname, username, role):
+    def add_group_member(cls, access_token, appname, username, role, is_lain_admin=False):
         try:
-            response = authorize.utils.add_group_member(access_token, appname, username, role)
+            add_group_func = authorize.utils.add_group_member_for_admin if is_lain_admin else \
+                authorize.utils.add_group_member
+            response = add_group_func(access_token, appname, username, role)
             if response.status_code != 200:
                 logger.warning("fail add group member %s to app %s : %s" % (
                     username, appname, response.text))

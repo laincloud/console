@@ -61,7 +61,7 @@ AUTH_TYPES = {
 }
 
 # common admin user for lain apps in sso
-LAIN_ADMIN_NAME = 'console'
+LAIN_ADMIN_NAME = 'lain'
 LAIN_ADMIN_ROLE = 'admin'
 
 LVAULT_CONFIG_URL = 'http://lvault.%s/v2/secrets' % DOMAIN
