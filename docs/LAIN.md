@@ -11,7 +11,7 @@
 ### 1. local dev/test env @ lain-box
 
 >`Target` : 基于 Lain 的机制提供一个方便的可重建的 docker 化的本地开发和测试环境
->`REF` : 建议阅读 [Docker Docs](https://docs.docker.com/)  [Docker —— 从入门到实践](http://yeasy.gitbooks.io/docker_practice/content/)  [Lain Docs](http://docs.lain.bdp.cc/)
+>`REF` : 建议阅读 [Docker Docs](https://docs.docker.com/)  [Docker —— 从入门到实践](http://yeasy.gitbooks.io/docker_practice/content/)  [Lain Docs](https://github.com/laincloud/white-paper)
 >`lain-box` 是基于 `vagrant` / `virtualbox` 的 一个虚拟机开发环境，其启动的虚拟机是一个集成了 `docker` 和 `laincli` 等工具的 `centos7.2` ，作为 `docker daemon` 的宿主系统
 
 #### 1.1. lain 环境预备
