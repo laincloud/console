@@ -10,7 +10,7 @@ Lain Console 组件属于 lain 集群的 layer1 组件，是 sa/op/dev/testing �
 
 ## 架构介绍
 
-Lain Console 仓库地址为： `http://laingit.bdp.cc/lain/console.git`
+Lain Console 仓库地址为： `https://github.com/laincloud/console.git`
 
 Lain Console 的架构图如下所示：
 
@@ -20,13 +20,15 @@ Lain Console 的架构图如下所示：
 
 - console：对外提供 Restful API，主要包括 /repos/, /apps/, /maintainers/, /roles/, /authorize/ 等API；
     
-- apps: 主要逻辑模块，lain 中提供的 app、service、resource 等部署方式由该模块进行组装，同时调用 authrize、deploys、configs 等相应模块完成操作；
+- apis: 主要逻辑模块，lain 中提供的 app、service、resource 等部署方式由该模块进行组装，同时调用 authrize、deploys、configs 等相应模块完成操作；
 
-- authorize：认证模块，封装了对 SSO 的操作接口，提供权限管理；
+- authorize：认证模块，封装了对 SSO 的操作接口，提供权限管理功能；
 
 - deploys：部署模块，封装了 deployd 的操作接口，提供部署功能；
 
-- configs：配置模块，封装了 console 构建 secret file 的操作接口，提供 config image 的管理功能；
+- configs：应用配置处理模块，封装了 console 构建 secret file 的操作接口，提供 config image 的管理功能；
+
+- commons: 公共模块，封装了一些公有的环境变量，同时对 calico、registry、etcd 等的操作进行了封装； 
 
 - external bin：包括 calicoctl 以及 rfpctl，calicoctl 用于提供 calico profile 设置，rfpctl 用于构建 config image；
 
