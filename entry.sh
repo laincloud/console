@@ -1,21 +1,17 @@
 #!/bin/bash
 
 environ=$LAIN_DOMAIN
-ssoserver="https://sso.yxapp.in"
-console_api_scheme="http"
+clientid=1
+clientsec="secret"
+ssoserver="https://sso.lain.local"
+console_api_scheme="https"
 
-if [ "$environ" = "yxapp.in" ]; then
-    clientid=7
-    clientsec="n-33rREkju-yTRs1dCmDxA"
-    console_api_scheme="https"
-elif [ "$environ" = "yxapp.xyz" ]; then
-    clientid=23
-    clientsec="7bnsvPR6keTMTyoUIQzOIA"
-    console_api_scheme="https"
-elif [ "$environ" = "lain.local" ]; then
-    clientid=9
-    clientsec="WGwJ4lc8dcDc8913wqd-pw=="
-    ssoserver="http://sso.lain.bdp.cc"
+# specify the client id, client secret and sso server here
+if [ "$environ" = "lain.local" ]; then
+    clientid=1
+    clientsec="secret_in_local"
+    ssoserver="http://sso.lain.local"
+	console_api_scheme="http"
 fi
 
 export SSO_CLIENT_ID=$clientid
