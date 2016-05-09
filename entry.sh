@@ -1,16 +1,16 @@
 #!/bin/bash
 
 environ=$LAIN_DOMAIN
-clientid=1
+clientid=3
 clientsec="secret"
-ssoserver="https://sso.lain.local"
+ssoserver="https://example.com"
 console_api_scheme="https"
 
 # specify the client id, client secret and sso server here
 if [ "$environ" = "lain.local" ]; then
-    clientid=1
+    clientid=3
     clientsec="secret_in_local"
-    ssoserver="http://sso.lain.local"
+    ssoserver="https://example.com"
 	console_api_scheme="http"
 fi
 

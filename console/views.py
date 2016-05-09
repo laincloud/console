@@ -140,7 +140,7 @@ def api_app_high_permit(request, appname):
     if request.method == 'DELETE':
         status_code, view_object, msg, url = AppApi.delete_app(appname)
         return render_json_response(status_code, 'app', view_object, msg, url)
-    elif request.method == 'PUT' or request.method == 'PATCH':
+    elif request.method == 'PUT':
         try:
             options = json.loads(request.body)
         except Exception:
