@@ -1,6 +1,5 @@
 # -*- coding: utf-8
 
-import sys
 from os import environ
 from .libs import get_etcd_value
 
@@ -39,8 +38,7 @@ SSO_GROUP_FULLNAME_PREFIX = environ.get("SSO_GROUP_FULLNAME_PREFIX", "Console AP
 try:
     CALICO_NETWORK = get_etcd_value("/lain/config/calico_network", ETCD_AUTHORITY)
 except:
-    print 'Cannot get calico network'
-    sys.exit(1)
+    CALICO_NETWORK = None
 
 HOST_NETWORK_ETCD_KEY = environ.get("CONSOLE_HOST_NETWORK_ETCD_KEY", "/lain/config/node_network")
 try:
@@ -60,7 +58,7 @@ AUTH_TYPES = {
     'SSO' : 'lain-sso'
 }
 
-# common admin user for lain apps in sso
+# common admin group for lain apps in sso
 LAIN_ADMIN_NAME = 'lain'
 LAIN_ADMIN_ROLE = 'admin'
 
