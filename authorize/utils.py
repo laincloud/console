@@ -7,7 +7,7 @@ from django import http
 from urllib import urlencode
 from urlparse import urlparse, parse_qs
 from commons.utils import read_from_etcd
-from commons.settings import (SSO_SERVER_NAME, SSO_GROUP_NAME_PREFIX, SSO_GROUP_FULLNAME_PREFIX,
+from commons.settings import (SSO_GROUP_NAME_PREFIX, SSO_GROUP_FULLNAME_PREFIX,
                     SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_REDIRECT_URI, SSO_GRANT_TYPE,
                     CONSOLE_AUTH_COMPLETE_URL, CONSOLE_NEED_AUTH_ETCD_KEY) 
 from log import logger
@@ -17,7 +17,6 @@ from log import logger
 group_prefix = "ca"  # sso中要求group_name第一个字符为[a-zA-Z]
 appname_prefix = SSO_GROUP_NAME_PREFIX
 group_fullname_prefix = SSO_GROUP_FULLNAME_PREFIX
-global_sso_server = SSO_SERVER_NAME
 client_id = SSO_CLIENT_ID
 client_secret = SSO_CLIENT_SECRET
 redirect_uri = SSO_REDIRECT_URI
@@ -31,7 +30,7 @@ def send_request(method, path, headers, json, params):
 
 
 def get_group_name_for_app(appname):
-    return "%s%s" %(group_prefix, hashlib.md5(appname_prefix + appname).hexdigest()[0:30])
+    return "%s%s" % (group_prefix, hashlib.md5(appname_prefix + appname).hexdigest()[0:30])
 
 
 def get_group_fullname_for_app(appname):
@@ -39,22 +38,26 @@ def get_group_fullname_for_app(appname):
 
 
 def need_auth(auth_type):
-    global global_sso_server
+    etcd_auth_type, _ = _get_auth_msg()
+    return auth_type == etcd_auth_type
 
+
+def _get_sso_server():
+    auth_type, auth_url = _get_auth_msg()
+    return auth_url
+
+
+def _get_auth_msg():
     try:
-        if global_sso_server is None: 
-            return False
         need_auth_r = read_from_etcd(CONSOLE_NEED_AUTH_ETCD_KEY)
         auth = json.loads(need_auth_r.value)  # pylint: disable=no-member
-        if auth['type'] == auth_type:
-            global_sso_server = auth['url']
-            return True
+        return auth['type'], auth['url']
     except Exception:
-        return False
+        return None, None
 
 
 def get_sso_access_token(code):
-    url = "%s/oauth2/token"%global_sso_server
+    url = "%s/oauth2/token" % _get_sso_server()
     auth_params = {
         'client_id':client_id,
         'grant_type':grant_type,
@@ -72,8 +75,8 @@ def redirect_to_ui(token_json):
 
 
 def get_user_info(access_token):
-    url = "%s/api/me/"%global_sso_server
-    headers = {'Authorization' : 'Bearer %s'%access_token}
+    url = "%s/api/me/" % _get_sso_server()
+    headers = {'Authorization' : 'Bearer %s' % access_token}
     return send_request("GET", url, headers, None, None)
 
 
@@ -81,45 +84,45 @@ def create_group_for_app(access_token, appname):
     group_name = get_group_name_for_app(appname)
     group_fullname = get_group_fullname_for_app(appname)
     group_msg = {'name' : group_name, 'fullname' : group_fullname}
-    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}
-    url = "%s/api/groups/" %global_sso_server
+    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s' % access_token}
+    url = "%s/api/groups/"  % _get_sso_server()
     return send_request("POST", url, headers, group_msg, None)
 
 
 def add_group_member(access_token, appname, username, role):
     group_name = get_group_name_for_app(appname)
     member_msg = {'role' : role}
-    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}
-    url = "%s/api/groups/%s/members/%s" %(global_sso_server, group_name, username)
+    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s' % access_token}
+    url = "%s/api/groups/%s/members/%s" % (_get_sso_server(), group_name, username)
     return send_request("PUT", url, headers, member_msg, None)
 
 
 def add_group_member_for_admin(access_token, appname, username, role):
     group_name = get_group_name_for_app(appname)
     member_msg = {'role' : role}
-    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}
-    url = "%s/api/groups/%s/group-members/%s" %(global_sso_server, group_name, username)
+    headers = {"Content-Type":"application/json", "Accept":"application/json", 'Authorization' : 'Bearer %s' % access_token}
+    url = "%s/api/groups/%s/group-members/%s" % (_get_sso_server(), group_name, username)
     return send_request("PUT", url, headers, member_msg, None)
 
 
 def delete_group_member(access_token, appname, username):
     group_name = get_group_name_for_app(appname)
-    headers = {"Accept":"application/json", 'Authorization' : 'Bearer %s'%access_token}
-    url = "%s/api/groups/%s/members/%s" %(global_sso_server, group_name, username)
+    headers = {"Accept":"application/json", 'Authorization' : 'Bearer %s' % access_token}
+    url = "%s/api/groups/%s/members/%s" % (_get_sso_server(), group_name, username)
     return send_request("DELETE", url, headers, None, None)
 
 
 def get_group_info(appname):
     group_name = get_group_name_for_app(appname)
     headers = {"Accept":"application/json"}
-    url = "%s/api/groups/%s" %(global_sso_server, group_name)
+    url = "%s/api/groups/%s" % (_get_sso_server(), group_name)
     return send_request("GET", url, headers, None, None)
 
 
 def get_user_role(username, appname):
     group_name = get_group_name_for_app(appname)
     headers = {"Accept":"application/json"}
-    url = "%s/api/groups/%s/members/%s" %(global_sso_server, group_name, username)
+    url = "%s/api/groups/%s/members/%s" % (_get_sso_server(), group_name, username)
     return send_request("GET", url, headers, None, None)
 
 
@@ -127,7 +130,7 @@ def get_user_role(username, appname):
 # use the first step of oauth2 temporarily
 def is_valid_user(username, password):
     try:
-        auth_url = global_sso_server + '/oauth2/auth' + '?' + urlencode({
+        auth_url = _get_sso_server() + '/oauth2/auth' + '?' + urlencode({
             'client_id': client_id,
             'response_type': 'code',
             'scope': 'write:group',
