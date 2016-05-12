@@ -124,7 +124,7 @@ curl /api/v1/apps/:appName/procs/:procName
 ```
 
 2. `PATCH`
->scale proc，或者修改使用 cpu 及 memory，注意两者不能同时生效
+>scale proc，或者修改使用的 cpu/memory，注意两者不能同时生效
 ```sh
 curl -X PATCH /api/v1/apps/:appName/procs/:procName/ -H "Content-Type: application/json" -d '{"num_instances":2, "cpu":1, "memory":"64M"}'
 ```
