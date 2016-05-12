@@ -1238,12 +1238,18 @@
                         "in": "body",
                         "name": "body",
                         "required": true,
-                        "description": "scale 目标 NumInstances",
+                        "description": "NumInstances 与 cpu/memory 不会同时生效",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "num_instances": {
                                     "$ref": "#/definitions/NumInstances"
+                                },
+                                "cpu": {
+                                    "$ref": "#/definitions/Cpu"
+                                },
+                                "memory": {
+                                    "$ref": "#/definitions/Memory"
                                 }
                             }
                         }
