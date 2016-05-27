@@ -14,7 +14,7 @@ from log import logger
 
 
 # parameters for sso auth
-group_prefix = "ca"  # sso中要求group_name第一个字符为[a-zA-Z]
+group_prefix = "ca"  # sso request the first character of the group_name to be [a-zA-Z]
 appname_prefix = SSO_GROUP_NAME_PREFIX
 group_fullname_prefix = SSO_GROUP_FULLNAME_PREFIX
 client_id = SSO_CLIENT_ID

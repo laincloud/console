@@ -128,9 +128,11 @@ class App(BaseApp):
             PRIVATE_REGISTRY, DOMAIN
         )
 
-
+    # Three parts in app updating:
+    #   - delete not depended resource;
+    #   - deploy new depended resource;
+    #   - update the app itself;
     def app_update(self, origin_resources, configed_instances):
-        # app部署分为三部分：删除不再依赖的resource，部署新增的依赖resource，以及更新self
         dp_resources_update_results = self.dp_resource_update(origin_resources, configed_instances)
         if not dp_resources_update_results.get("OK", False):
             return {
@@ -188,9 +190,11 @@ class App(BaseApp):
             'instances_remove_results': instances_remove_results
         }
 
+
+    # Two parts in app deploying:
+    #   - deploy depended resource instance
+    #   - deploy app itself
     def app_deploy(self, configed_instances):
-        # app部署分为两部分：部署依赖的resource instance 以及 app itself
-        # 如果instance 和 app 本身包含portal，则同时需要对portal进行注册
         dp_resources_deploy_results = self.dp_resource_deploy(configed_instances)
         if not dp_resources_deploy_results.get("OK", False):
             return {
@@ -364,7 +368,7 @@ class App(BaseApp):
                     remove_missed_results[pg_spec.Name] = remove_r
                 else:
                     remove_failed_results[pg_spec.Name] = remove_r
-            # 对于 portal 类型的 proc 调用 Deploy: remove dependency 的 api
+            # use dependency_remove api of Deployd for deleting proc with portal type
             for dp_spec in app_spec.Portals:
                 remove_r = self.dependency_remove(dp_spec.Name)
                 if remove_r.status_code < 400:
@@ -386,7 +390,7 @@ class App(BaseApp):
 
     @classmethod
     def get_portal_name_from_service_name(cls, service, service_name):
-        if not service or not service.is_reachable():
+        if not service or not service.lain_config or not service.is_reachable():
             return 'portal-' + service_name
         for name, proc in service.lain_config.procs.iteritems():
             if proc.service_name == service_name:
@@ -400,7 +404,7 @@ class App(BaseApp):
         return None
 
     def podgroup_deploy(self, podgroup_spec, autopatch=True):
-        # 单纯的不考虑 Dependency 的非 portal 类型 proc 部署
+        # do not consider the Dependency of the not-portal-type proc
         logger.info("deploy podgroup %s of app %s " % (podgroup_spec.Name, self.appname))
         now_status = self.podgroup_status(podgroup_spec.Name)
         for c in podgroup_spec.Pod.Containers:
@@ -412,7 +416,7 @@ class App(BaseApp):
             return self.default_deploy.create_podgroup(json_of_spec(podgroup_spec))
         else:
             if autopatch:
-                # TODO 将原有的 cpu 和 memory PATCH 到新 spec
+                # PATCH the origin cpu and memory to the new spec
                 cpu = int(now_status['Status']['Spec']['Pod']['Containers'][0]['CpuLimit'])
                 memory = int(now_status['Status']['Spec']['Pod']['Containers'][0]['MemoryLimit'])
                 for c in podgroup_spec.Pod.Containers:
@@ -438,7 +442,7 @@ class App(BaseApp):
         return self.default_deploy.remove_podgroup(podgroup_name)
 
     def dependency_register(self, service_app, service_appname, dependency_pod_name):
-        # service 可能还未被注册或部署，因此如果service不存在需要强制生成service_profile
+        # service may not been deployed yet, so may need force generate the calico profile of service_profile
         service_app_profile = service_appname
         add_calico_profile_for_app(service_app_profile)
 
@@ -463,7 +467,6 @@ def recursive_deploy(podgroup_spec):
     app = App.get(podgroup_spec.Namespace)
     app.add_calico_profile()
 
-    # 检查 App 依赖的需要部署的 service
     services = app.lain_config.use_services
     for service_appname, service_procnames in services.iteritems():
         service_app = App.get_or_none(service_appname)
@@ -476,7 +479,6 @@ def recursive_deploy(podgroup_spec):
             # TODO check portal.allow(client procname)
             app.dependency_register(service_app, service_appname, portal_pod_name)
 
-    # 检查 App 使用的Resource 依赖的需要部署的 service
     resources = app.lain_config.use_resources
     for resourcename, resource_props in resources.iteritems():
         instance_app = App.get_or_none(resource_instance_name(resourcename, app.appname))

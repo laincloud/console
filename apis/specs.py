@@ -299,7 +299,7 @@ def render_podgroup_spec(app_name, proc, use_services, use_resources):
     )
     pod_group.Namespace = app_name
     pod_group.NumInstances = proc.num_instances
-    pod_group.RestartPolicy = RestartPolicy.Always # TODO 应该是用户可配置
+    pod_group.RestartPolicy = RestartPolicy.Always # TODO allow user definiton
     pod_group.Pod = render_pod_spec(app_name, proc, use_services, use_resources)
     return pod_group
 
@@ -330,13 +330,13 @@ def render_container_spec(app_name, proc):
     c.Image = proc.image
     c.Env = copy.deepcopy(proc.env)
     c.set_env("TZ", 'Asia/Shanghai')
-    c.User = '' if not hasattr(proc, 'user') else proc.user # TODO 之后需要写死为 root
+    c.User = '' if not hasattr(proc, 'user') else proc.user
     c.WorkingDir = '' if not hasattr(proc, 'working_dir') else proc.working_dir
     c.DnsSearch = [] if not hasattr(proc, 'dns_search') else copy.deepcopy(proc.dns_search)
     c.Volumes = copy.deepcopy(proc.volumes)
     c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
-    c.Command = proc.cmd.split() # TODO 解决 proc.cmd == ./run -p "a b c" 类似的问题
-    c.Entrypoint = [] # TODO 之后需要写死为 /lain/entrypoint/lain-entrypoint
+    c.Command = proc.cmd.split() # TODO solve the problem like `proc.cmd == ./run -p "a b c"`
+    c.Entrypoint = [] # TODO maybe force define to /lain/entrypoint/lain-entrypoint
     c.CpuLimit = proc.cpu
     c.MemoryLimit = humanfriendly.parse_size(proc.memory)
     c.Expose = 0 if not proc.port else proc.port.keys()[0]
@@ -351,7 +351,7 @@ def render_dependency(service_app, service):
          App.get_portal_name_from_service_name(
             App.get_or_none(service_app), service)
     )
-    d.Policy = DependencyPolicy.NamespaceLevel # TODO 应该是用户可配置
+    d.Policy = DependencyPolicy.NamespaceLevel # TODO allow user definiton
     return d
 
 def json_of_spec(spec):

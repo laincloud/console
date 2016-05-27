@@ -499,6 +499,7 @@ class AppApi:
 
     @classmethod
     def _app_update_thread(cls, token, app, target_meta_version):
+        former_version, former_meta = app.meta_version, app.meta
         try:
             if app.appname.find('.') > 0:
                 cls._update_resource_instance(token, app, target_meta_version)
@@ -508,6 +509,9 @@ class AppApi:
             client.captureException()
             error_msg = "error when updating app %s : %s" % (app.appname, str(e))
             logger.error(error_msg)
+            # role back to the former version if error happends
+            app.meta_version = former_version
+            app.meta = former_meta
             app.update_last_error(error_msg)
         finally:
             app.set_deployed()
@@ -518,7 +522,7 @@ class AppApi:
                 instance.appname, AuthApi.operater, target_meta_version))
         logger.info("ready update resource instance %s" % instance.appname)
 
-        # 更新resource instance时target_meta_version应为对应resource的meta_version
+        # when updating resource instance, its target_meta_version should be the latest meta_version of resource
         resourcename = Resource.get_resourcename_from_instancename(instance.appname)
         resource = App.get(resourcename)
         instance.meta_version = target_meta_version if target_meta_version else resource.meta_version
