@@ -386,7 +386,7 @@ class App(BaseApp):
 
     @classmethod
     def get_portal_name_from_service_name(cls, service, service_name):
-        if not service or not service.is_reachable():
+        if not service or not service.lain_config or not service.is_reachable():
             return 'portal-' + service_name
         for name, proc in service.lain_config.procs.iteritems():
             if proc.service_name == service_name:
