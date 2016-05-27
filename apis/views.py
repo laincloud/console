@@ -522,7 +522,7 @@ class AppApi:
                 instance.appname, AuthApi.operater, target_meta_version))
         logger.info("ready update resource instance %s" % instance.appname)
 
-        # 更新resource instance时target_meta_version应为对应resource的meta_version
+        # when updating resource instance, its target_meta_version should be the latest meta_version of resource
         resourcename = Resource.get_resourcename_from_instancename(instance.appname)
         resource = App.get(resourcename)
         instance.meta_version = target_meta_version if target_meta_version else resource.meta_version
