@@ -4,6 +4,7 @@ from deploys.models import Deploy
 from lain_sdk.yaml.parser import (
     render_resource_instance_meta, 
     resource_instance_name,
+    ProcType,
 )
 from .base_app import BaseApp
 from .specs import (
@@ -120,7 +121,6 @@ class App(BaseApp):
             print "Error getting Dependency: %s"%r.content
             return None
 
-
     def get_resource_instance_meta(self, client_appname, context):
         return render_resource_instance_meta(
             self.appname, self.meta_version, self.meta,
@@ -132,7 +132,7 @@ class App(BaseApp):
     #   - delete not depended resource;
     #   - deploy new depended resource;
     #   - update the app itself;
-    def app_update(self, origin_resources, configed_instances):
+    def app_update(self, origin_resources, origin_procs, configed_instances):
         dp_resources_update_results = self.dp_resource_update(origin_resources, configed_instances)
         if not dp_resources_update_results.get("OK", False):
             return {
@@ -141,7 +141,7 @@ class App(BaseApp):
                 'app_update_results': []
             }
 
-        app_update_results = self.basic_app_deploy()
+        app_update_results = self.basic_app_deploy(origin_procs)
         if app_update_results.get('OK', False):
             self.set_deployed()
         return {
@@ -189,7 +189,6 @@ class App(BaseApp):
             'instances_deploy_results': instances_deploy_results,
             'instances_remove_results': instances_remove_results
         }
-
 
     # Two parts in app deploying:
     #   - deploy depended resource instance
@@ -247,7 +246,7 @@ class App(BaseApp):
             resource_instance.set_deployed()
         return None, instance_deploy_success, instance_deploy_result
 
-    def basic_app_deploy(self):
+    def basic_app_deploy(self, origin_procs=None):
         logger.info("deploy basic app : %s " % self.appname)
         proc_results = {}
         proc_deploy_success = {}
@@ -288,8 +287,6 @@ class App(BaseApp):
                     portals_register_success[dp_spec.Name] = portal_r
                 else:
                     portals_register_failed[dp_spec.Name] = portal_r
-        # TODO proc DELETE
-        # TODO portal DELETE
         portal_results = {
             'OK': len(portals_register_failed) == 0,
             'portals_register_success': portals_register_success,
@@ -297,12 +294,50 @@ class App(BaseApp):
             'portals_update_success': portals_update_success,
             'portals_update_failed': portals_update_failed
         }
-        return {
+
+        result = {
             'OK': proc_results.get('OK', False) and portal_results.get('OK', False),
             'proc_results': proc_results,
             'portal_results': portal_results
         }
+        if origin_procs is not None:
+            result['useless_procs_remove_results'] = self.useless_procs_remove(origin_procs)
 
+        return result
+
+    def useless_procs_remove(self, origin_procs):
+        remove_results = {}
+        remove_success_results = {}
+        remove_failed_results = {}
+        remove_missed_results = {}
+
+        current_pgs = ["%s.%s.%s" % (self.appname, p.type.name, p.name) 
+                            for p in self.lain_config.procs.values()]
+        try:
+            for proc in origin_procs:
+                pg_name = "%s.%s.%s" % (self.appname, proc.type.name, proc.name)
+                if pg_name in current_pgs:
+                    continue
+
+                logger.info("remove useless proc %s of app : %s " % (pg_name, self.appname))
+                remove_r = self.podgroup_remove(pg_name) if proc.type != ProcType.portal else \
+                    self.dependency_remove(pg_name)
+                if remove_r.status_code < 400:
+                    remove_success_results[pg_name] = remove_r
+                elif remove_r.status_code == 404:
+                    remove_missed_results[pg_name] = remove_r
+                else:
+                    remove_failed_results[pg_name] = remove_r
+        except Exception, e:
+            logger.warning("failed when trying to remove useless proc of app %s: %s" % 
+                (self.appname, str(e)))
+        remove_results = {
+            'OK': len(remove_failed_results) == 0,
+            'remove_success_results': remove_success_results,
+            'remove_failed_results': remove_failed_results,
+            'remove_missed_results': remove_missed_results
+        }
+        return remove_results
 
     def app_remove(self):
         # remove the app itself first
@@ -386,7 +421,6 @@ class App(BaseApp):
             'remove_missed_results': remove_missed_results
         }
         return remove_results
-
 
     @classmethod
     def get_portal_name_from_service_name(cls, service, service_name):

@@ -75,6 +75,12 @@ def render_basic_app_deploy_result_to_msg(deploy_result):
     msg += '  portals_update_failed:\n'
     for pgname, pg_result in portal_results['portals_update_failed'].iteritems():
         msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pg_result))
+    msg += '\n'
+
+    useless_procs_remove_results = deploy_result.get('useless_procs_remove_results')
+    if useless_procs_remove_results:
+        msg+='--useless_procs_remove_results--\n'
+        msg+=render_basic_app_remove_result_to_msg(useless_procs_remove_results)
     return msg
 
 
@@ -522,6 +528,8 @@ class AppApi:
                 instance.appname, AuthApi.operater, target_meta_version))
         logger.info("ready update resource instance %s" % instance.appname)
 
+        origin_procs = instance.lain_config.procs.values()
+
         # when updating resource instance, its target_meta_version should be the latest meta_version of resource
         resourcename = Resource.get_resourcename_from_instancename(instance.appname)
         resource = App.get(resourcename)
@@ -534,12 +542,12 @@ class AppApi:
 
         for resource_appname, resource_props in resources.iteritems():
             if resource_appname == resourcename:   
-                instance.meta = resource.get_resource_instance_meta(
+                updated_meta = resource.get_resource_instance_meta(
                        clientname, resource_props['context'])
-                instance.save()
+                instance.update_meta(None, meta=updated_meta, update_spec=True)
 
         ConfigApi.construct_config_for_instance(token, resource, instance)
-        update_result = instance.basic_app_deploy()
+        update_result = instance.basic_app_deploy(origin_procs)
         logger.info("%s update result: %s" % (instance.appname, 
             render_app_update_result_to_msg(update_result, is_resource_instance=True)))
         if not update_result.get("OK", False):
@@ -554,6 +562,7 @@ class AppApi:
         # bachup the former setting
         origin_app = copy.deepcopy(app)
         origin_resource = {} if (app.lain_config is None) else app.lain_config.use_resources
+        origin_procs = {} if (app.lain_config is None) else app.lain_config.procs.values()
 
         logger.info("ready update app %s" % app.appname)
         if not app.update_meta(target_meta_version, force=True, 
@@ -571,7 +580,7 @@ class AppApi:
 
             configed_instances = cls._get_configed_instances(token, app, app.lain_config.use_resources, update=True)
             ConfigApi.construct_config_for_app(token, app)
-            update_result = app.app_update(origin_resource, configed_instances)
+            update_result = app.app_update(origin_resource, origin_procs, configed_instances)
             logger.info("%s update result: %s" % (app.appname, render_app_update_result_to_msg(update_result)))
             if not update_result.get("OK", False):
                 raise Exception("error updating : %s" % render_app_update_result_to_msg(update_result))
