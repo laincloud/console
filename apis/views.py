@@ -378,7 +378,7 @@ class AppApi:
             app.set_deployed()
 
     @classmethod
-    def _get_configed_instances(cls, token, app, resources, update=False):
+    def _get_configed_instances(cls, token, app, resources):
         configed_instances = {}
         if resources is None:
             return configed_instances
@@ -391,8 +391,6 @@ class AppApi:
 
             instancename = resource_instance_name(resourcename, app.appname)
             resource_instance = App.get_or_none(instancename)
-            if resource_instance and update:
-                continue
             if not resource_instance:
                 resource_instance = App.create(instancename)
             resource_instance.meta_version = resource.meta_version
@@ -578,7 +576,7 @@ class AppApi:
                 logger.error('error when creating resource instance group for app %s : %s ' % (app.appname, msg))
                 raise Exception('error when creating resource instance group for app %s : %s ' % (app.appname, msg))
 
-            configed_instances = cls._get_configed_instances(token, app, app.lain_config.use_resources, update=True)
+            configed_instances = cls._get_configed_instances(token, app, app.lain_config.use_resources)
             ConfigApi.construct_config_for_app(token, app)
             update_result = app.app_update(origin_resource, origin_procs, configed_instances)
             logger.info("%s update result: %s" % (app.appname, render_app_update_result_to_msg(update_result)))
