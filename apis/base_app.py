@@ -294,15 +294,21 @@ class BaseApp:
         self.save()
         return 'meta updated'
 
-    def update_meta(self, meta_version, force=False, 
+    def update_meta(self, meta_version, meta=None, force=False, 
                     update_lain_config=True, update_spec=True):
-        logger.debug("try to update meta of app `%s` to meta version `%s`" % (self.appname, meta_version))
-        result = self.base_update_meta(meta_version, force)
+        if meta is not None:
+            logger.debug("meta of app `%s` was specified to `%s`" % (self.appname, meta))
+            self.meta = meta
+            self.save()
+            result = "meta specified"
+        else:
+            logger.debug("try to update meta of app `%s` to meta version `%s`" % (self.appname, meta_version))
+            result = self.base_update_meta(meta_version, force)
         if update_lain_config:
             self.lain_config = self._get_lain_config()
         if update_spec:
             self.app_spec = render_app_spec(self.lain_config)
-        logger.debug("finish updating meta of app `%s` to meta version `%s`" % (self.appname, meta_version))
+        logger.debug("finish updating meta of app `%s`" % self.appname)
         return result
 
     def check_latest_version(self):
