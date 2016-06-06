@@ -59,7 +59,7 @@ AUTH_TYPES = {
 }
 
 # common admin group for lain apps in sso
-LAIN_ADMIN_NAME = 'lain'
-LAIN_ADMIN_ROLE = 'admin'
+LAIN_ADMIN_NAME = environ.get("CONSOLE_LAIN_ADMIN_NAME", "lain")
+LAIN_ADMIN_ROLE = environ.get("CONSOLE_LAIN_ADMIN_ROLE", "admin")
 
-LVAULT_CONFIG_URL = 'http://lvault.%s/v2/secrets' % DOMAIN
+LVAULT_CONFIG_URL = environ.get("LVAULT_CONFIG_URL", "http://lvault.%s/v2/secrets" % DOMAIN)
