@@ -337,6 +337,7 @@ def render_container_spec(app_name, proc):
     c.Volumes = copy.deepcopy(proc.volumes)
     c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
     logger.info("kai >>> proc.cmd: {}".format(proc.cmd))
+    # c.Command = proc.cmd.split() # TODO solve the problem like `proc.cmd == ./run -p "a b c"`
     c.Command = proc.cmd # TODO solve the problem like `proc.cmd == ./run -p "a b c"`
     logger.info("kai >>> c.Command: {}".format(c.Command))
     c.Entrypoint = [] # TODO maybe force define to /lain/entrypoint/lain-entrypoint
