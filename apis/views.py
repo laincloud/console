@@ -133,9 +133,9 @@ def render_app_remove_result_to_msg(remove_result):
     msg = 'OK: %s\n'%remove_result.get('OK', False)
     msg += 'app_remove_results:\n'
     msg += render_basic_app_remove_result_to_msg(remove_result['app_remove_results'])
-    
+
     instance_remove_results = remove_result['dp_resources_remove_results']
-    if instance_remove_results.get('has_resource', False):    
+    if instance_remove_results.get('has_resource', False):
         msg += 'resource_instance_remove_results:\n'
         for riname, remove_result in instance_remove_results['instances_remove_results'].iteritems():
             msg += '  %s\n%s\n' % (riname, render_basic_app_remove_result_to_msg(remove_result))
@@ -143,12 +143,12 @@ def render_app_remove_result_to_msg(remove_result):
 
 
 def render_app_update_result_to_msg(update_result, is_resource_instance=False):
-    msg = 'OK: %s\n'%update_result.get('OK', False)  
+    msg = 'OK: %s\n'%update_result.get('OK', False)
     if not is_resource_instance:
         msg += 'dp_resource_update_results:\n'
         resource_update_results = update_result['dp_resources_update_results']
         msg += '  resource_instance_deploy_results:\n'
-        msg += '    %s\n' % (render_resource_deploy_result_to_msg(resource_update_results))  
+        msg += '    %s\n' % (render_resource_deploy_result_to_msg(resource_update_results))
         msg += '  resource_instance_remove_results:\n'
         for riname, remove_result in resource_update_results['instances_remove_results'].iteritems():
                 msg += '    %s\n%s\n' % (riname, render_basic_app_remove_result_to_msg(remove_result))
@@ -167,7 +167,7 @@ console.views 将上面的 turple 封装成 JsonResponse
 class AppApi:
 
     @classmethod
-    def render_app_data(cls, appname, app_lain_conf, app_type, last_error, last_update, 
+    def render_app_data(cls, appname, app_lain_conf, app_type, last_error, last_update,
                         app_status=None, iteration=True, client=None):
         data = {
             'appname': appname,
@@ -194,7 +194,7 @@ class AppApi:
                 useservices.append({
                     'servicename': service_appname,
                     'serviceprocs': service_procname_list,
-                    'service': {} if not service or not service.is_reachable() else 
+                    'service': {} if not service or not service.is_reachable() else
                         AppApi.render_app(service, iteration=False, client=app_lain_conf.appname)
                 })
 
@@ -243,7 +243,7 @@ class AppApi:
             instances = []
             for instance in Resource.get_instances(app_lain_conf.appname):
                 instances.append(AppApi.render_app(instance))
-            data['resourceinstances'] = instances    
+            data['resourceinstances'] = instances
         return data
 
     @classmethod
@@ -283,10 +283,10 @@ class AppApi:
         try:
             apps = App.all()
             if open_auth:
-                app_datas = [AppApi.render_app(a) for a in apps if a.is_reachable() 
+                app_datas = [AppApi.render_app(a) for a in apps if a.is_reachable()
                     and (True if apptype == '' else a.get_app_type() == apptype) and AuthApi.verify_app_access(groups, a.appname)]
             else:
-                app_datas = [AppApi.render_app(a) for a in apps if a.is_reachable() 
+                app_datas = [AppApi.render_app(a) for a in apps if a.is_reachable()
                     and (True if apptype == '' else a.get_app_type() == apptype)]
         except Exception, e:
             client.captureException()
@@ -353,7 +353,7 @@ class AppApi:
 
             logger.info("ready create app %s" % app.appname)
             if not app.update_meta(meta_version, force=True, update_spec=False):
-                raise Exception("error getting meta_version/meta %s for app %s" % (meta_version, app.appname)) 
+                raise Exception("error getting meta_version/meta %s for app %s" % (meta_version, app.appname))
 
             logger.info("update metaversion to %s" % meta_version)
             if app.get_app_type() != AppType.Resource:
@@ -363,7 +363,7 @@ class AppApi:
                     raise Exception("error creating resource instance group for app %s : %s" % (app.appname, msg))
 
                 configed_instances = cls._get_configed_instances(token, app, app.lain_config.use_resources)
-                
+
                 ConfigApi.construct_config_for_app(token, app)
                 deploy_result = app.app_deploy(configed_instances)
                 logger.info("%s deploy result: %s" % (app.appname, render_app_deploy_result_to_msg(deploy_result)))
@@ -436,7 +436,7 @@ class AppApi:
                 return (404, None,
                         'app with appname %s has not been deployd\n'%appname,
                         reverse('api_apps'))
-            
+
             if app.get_app_type() == AppType.Resource:
                 return (403, AppApi.render_app(app),
                     'Not allow to delete resource app.',
@@ -490,7 +490,7 @@ class AppApi:
             app.set_deploying()
             t = Thread(target=cls._app_update_thread, args=(access_token, app, target_meta_version,))
             t.start()
-            return (202, AppApi.render_app(app), 'update request of app %s has been accepted.'%appname, 
+            return (202, AppApi.render_app(app), 'update request of app %s has been accepted.'%appname,
                     reverse('api_app', kwargs={'appname': appname}))
         except InvalidMetaVersion, ime:
             return (500, None,
@@ -539,14 +539,14 @@ class AppApi:
         resources = client_app.lain_config.use_resources
 
         for resource_appname, resource_props in resources.iteritems():
-            if resource_appname == resourcename:   
+            if resource_appname == resourcename:
                 updated_meta = resource.get_resource_instance_meta(
                        clientname, resource_props['context'])
                 instance.update_meta(None, meta=updated_meta, update_spec=True)
 
         ConfigApi.construct_config_for_instance(token, resource, instance)
         update_result = instance.basic_app_deploy(origin_procs)
-        logger.info("%s update result: %s" % (instance.appname, 
+        logger.info("%s update result: %s" % (instance.appname,
             render_app_update_result_to_msg(update_result, is_resource_instance=True)))
         if not update_result.get("OK", False):
             raise Exception("error updating : %s" % render_app_update_result_to_msg(
@@ -563,7 +563,7 @@ class AppApi:
         origin_procs = {} if (app.lain_config is None) else app.lain_config.procs.values()
 
         logger.info("ready update app %s" % app.appname)
-        if not app.update_meta(target_meta_version, force=True, 
+        if not app.update_meta(target_meta_version, force=True,
                                update_spec=(app.get_app_type() != AppType.Resource)):
             logger.error('error when loading meta_version %s for app %s' % (target_meta_version, app.appname))
             raise Exception('error when loading meta_version %s for app %s' % (target_meta_version, app.appname))
@@ -587,7 +587,7 @@ class AppApi:
     def recover_fail_update(self, origin_app, new_app):
         new_app.meta = origin_app.meta
         new_app.meta_version = origin_app.meta_version
-        new_app.save() 
+        new_app.save()
 
     @classmethod
     def get_app(cls, appname, options=None):
@@ -633,7 +633,7 @@ class ProcApi:
                'status': str(pod['Containers'][0]['Runtime']['State']['Running']),
                'envs': pod['Containers'][0]['Runtime']['Config']['Env'],
               }
-         
+
     @classmethod
     def render_proc_data(cls, appname, proc_lain_conf, proc_status=None, is_portal=False, client=None):
         data = {
@@ -651,7 +651,8 @@ class ProcApi:
             'user': proc_lain_conf.user,
             'workingdir': proc_lain_conf.working_dir,
             'entrypoint': [],
-            'cmd': proc_lain_conf.cmd.split(),
+            # 'cmd': proc_lain_conf.cmd.split(),
+            'cmd': proc_lain_conf.cmd,
             'envs': proc_lain_conf.env,
             'pods': [],
             'depends': [],
@@ -671,10 +672,10 @@ class ProcApi:
             if is_portal:
                 for client_name, pods_info in pods_meta.iteritems():
                     if client and client != client_name:
-                        continue 
+                        continue
                     for pod in pods_info:
-                        pods.append(ProcApi.render_pod_data(pod))   
-            else: 
+                        pods.append(ProcApi.render_pod_data(pod))
+            else:
                 for pod in pods_meta:
                     pods.append(ProcApi.render_pod_data(pod))
             data['pods'] = pods
@@ -731,7 +732,7 @@ class ProcApi:
 
             op_logger.info("DEPLOY: proc %s from app %s deployed by %s" % (
                 procname, appname, AuthApi.operater))
-            
+
             podgroup_name = "%s.%s.%s" % (app.appname, proc.type.name, proc.name)
             podgroup_spec = app.podgroup_spec(podgroup_name)
             deploy_result = recursive_deploy(podgroup_spec)
@@ -837,7 +838,7 @@ class ProcApi:
             if pg_status:
                 now_podgroup_spec = render_podgroup_spec_from_json(pg_status['Status']['Spec'])
                 new_podgroup_spec = now_podgroup_spec.clone()
-                if verified_options.has_key('num_instances'):       
+                if verified_options.has_key('num_instances'):
                     op_logger.info("SCALE: proc %s from app %s scaled by %s with instance %d" % (
                         procname, appname, AuthApi.operater, verified_options['num_instances']))
                     new_podgroup_spec.NumInstances = verified_options['num_instances']
@@ -1013,7 +1014,7 @@ class MaintainApi:
 
             if access_token and not username:
                 username = Authorize.get_username(access_token)
-            
+
             success, role = Group.get_user_role(username, appname)
             if success:
                 return (200, MaintainApi.render_role_data(appname, username, role), '',
@@ -1026,7 +1027,7 @@ class MaintainApi:
         except Exception, e:
             return (500, None,
                     'fatal error when getting roles for %s:\n%s\nplease contact with admin of lain\n' % (appname, e),
-                    reverse('api_docs')) 
+                    reverse('api_docs'))
 
 
 '''
@@ -1077,7 +1078,7 @@ class AuthApi:
     @classmethod
     def get_sso_access_token(cls, code):
         return Authorize.get_sso_access_token(code)
-    
+
     @classmethod
     def redirect_to_ui(cls, token_json):
         return Authorize.redirect_to_ui(token_json)
@@ -1146,7 +1147,7 @@ class ConfigApi:
         defined_secret_files = get_defined_secret_files(app, pg_name)
         if len(defined_secret_files) == 0:
             return None
-        
+
         config_list= Config.get_configs(token, app.appname, pg_name)
         config_list, timestamp = Config.validate_defined_secret_files(config_list, defined_secret_files)
         config_tag = cls.get_config_image(app, config_list, defined_secret_files, pg_name, timestamp)
@@ -1173,4 +1174,4 @@ class ConfigApi:
         if target_repo != app.appname or "%s-%s" % (target_tag, config_tag) not in app.registry_tags:
             Config.overlap_config_image(app.appname, config_tag, config_layer_count, target_repo, target_tag)
         return "%s:%s-%s" % (target_repo, target_tag, config_tag)
- 
+
