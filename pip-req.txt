@@ -26,5 +26,5 @@ cryptography==1.1.1
 pyjwt==1.4.0
 netaddr==0.7.18
 raven==5.13.0
--e git+https://github.com/laincloud/lain-sdk.git#egg=lain_sdk
-# -e git+https://github.com/kaizhang-shanxi/lain-sdk.git@cmd-fix#egg=lain_sdk
+# -e git+https://github.com/laincloud/lain-sdk.git#egg=lain_sdk
+-e git+https://github.com/kaizhang-shanxi/lain-sdk.git@cmd-fix#egg=lain_sdk
