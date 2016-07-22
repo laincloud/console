@@ -3,7 +3,7 @@ appname: console
 build:
   base: laincloud/centos-lain:20160503
   prepare:
-    version: "3"
+    version: "1"
     script:
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
