@@ -7,7 +7,6 @@ import json
 import jsonpickle
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from commons.utils import get_system_volumes_from_etcd
-from log import logger
 
 class AppType:
 
@@ -336,12 +335,8 @@ def render_container_spec(app_name, proc):
     c.DnsSearch = [] if not hasattr(proc, 'dns_search') else copy.deepcopy(proc.dns_search)
     c.Volumes = copy.deepcopy(proc.volumes)
     c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
-    logger.info("kai >>> proc.cmd: {}".format(proc.cmd))
-    # c.Command = proc.cmd.split() # TODO solve the problem like `proc.cmd == ./run -p "a b c"`
-    c.Command = proc.cmd # TODO solve the problem like `proc.cmd == ./run -p "a b c"`
-    logger.info("kai >>> c.Command: {}".format(c.Command))
-    # c.Entrypoint = [] # TODO maybe force define to /lain/entrypoint/lain-entrypoint
-    c.Entrypoint = proc.entrypoint # TODO maybe force define to /lain/entrypoint/lain-entrypoint
+    c.Command = proc.cmd
+    c.Entrypoint = proc.entrypoint # TODO maybe force define to /lain/entrypoint/lain-entrypoint # not understand this comment, kaizhang
     c.CpuLimit = proc.cpu
     c.MemoryLimit = humanfriendly.parse_size(proc.memory)
     c.Expose = 0 if not proc.port else proc.port.keys()[0]
