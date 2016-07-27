@@ -336,7 +336,7 @@ def render_container_spec(app_name, proc):
     c.Volumes = copy.deepcopy(proc.volumes)
     c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
     c.Command = proc.cmd
-    c.Entrypoint = proc.entrypoint # TODO maybe force define to /lain/entrypoint/lain-entrypoint # not understand this comment, kaizhang
+    c.Entrypoint = proc.entrypoint
     c.CpuLimit = proc.cpu
     c.MemoryLimit = humanfriendly.parse_size(proc.memory)
     c.Expose = 0 if not proc.port else proc.port.keys()[0]
