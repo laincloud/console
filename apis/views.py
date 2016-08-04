@@ -213,6 +213,7 @@ class AppApi:
         portals = []
         procs_who_have_status = []
         if app_status:
+            data['deployerror'] = last_error if last_error else app_status['LastError']
             for pg_status in app_status['PodGroups']:
                 pg_name = pg_status['Name']
                 procname = pg_name.split('.')[-1]

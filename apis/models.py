@@ -61,6 +61,7 @@ class App(BaseApp):
         deploy = self.default_deploy
         podgroups = []
         portals = []
+        last_error = ''
         status = {
             'AppName': self.appname,
             'PodGroups': podgroups,
@@ -70,6 +71,7 @@ class App(BaseApp):
             try:
                 r = deploy.get_podgroup(pg.Name)
                 if r.status_code < 400:
+                    last_error = r.json()['LastError']
                     podgroups.append({'Name': pg.Name, 'Status': r.json()})
                 else:
                     print "Error getting PodGroup: %s"%r.content
@@ -86,6 +88,7 @@ class App(BaseApp):
             except Exception, e:
                 portals.append({'Name': ps.Name, 'Status': 'Error getting Portal: %s'%e})
                 print "Error getting Portal: %s"%e
+        status['LastError'] = last_error
         return status
 
     def proc_and_pg_status(self, procname):
