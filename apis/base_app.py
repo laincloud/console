@@ -113,7 +113,7 @@ class BaseApp:
         try:
             apps_root_r = read_from_etcd(cls.ETCD_PREFIX)
         except EtcdKeyNotFound, e:
-            print "Warning: App.all() %s"%e
+            logger.warn("call App.all() fail: %s" % e)
             return []
         apps = []
         for l in apps_root_r.leaves:
@@ -122,7 +122,7 @@ class BaseApp:
                 app = cls.get(appname)
                 apps.append(app)
             except:
-                print "ERROR: error getting app %s from etcd"%appname
+                logger.error("error getting app %s from etcd" % appname)
         return apps
 
     @classmethod
