@@ -61,31 +61,35 @@ class App(BaseApp):
         deploy = self.default_deploy
         podgroups = []
         portals = []
+        last_error = ''
         status = {
             'AppName': self.appname,
             'PodGroups': podgroups,
             'Portals': portals,
+            'LastError': last_error,
         }
         for pg in self.app_spec.PodGroups:
             try:
                 r = deploy.get_podgroup(pg.Name)
                 if r.status_code < 400:
+                    last_error = r.json()['LastError']
                     podgroups.append({'Name': pg.Name, 'Status': r.json()})
                 else:
-                    print "Error getting PodGroup: %s"%r.content
+                    logger.error("Error getting PodGroup: %s" % r.content)
             except Exception, e:
-                podgroups.append({'Name': pg.Name, 'Status': 'Error getting PodGroup: %s'%e})
-                print "Error getting PodGroup: %s"%e
+                podgroups.append({'Name': pg.Name, 'Status': 'Error getting PodGroup: %s' % e})
+                logger.error("Error getting PodGroup: %s" % e)
         for ps in self.app_spec.Portals:
             try:
                 r = deploy.get_dependency(ps.Name)
                 if r.status_code < 400:
                     portals.append({'Name': ps.Name, 'Status': r.json()})
                 else:
-                    print "Error getting Portal: %s"%r.content
+                    logger.error("Error getting Portal: %s" % r.content)
             except Exception, e:
                 portals.append({'Name': ps.Name, 'Status': 'Error getting Portal: %s'%e})
-                print "Error getting Portal: %s"%e
+                logger.error("Error getting Portal: %s" % e)
+        status['LastError'] = last_error
         return status
 
     def proc_and_pg_status(self, procname):
@@ -106,7 +110,7 @@ class App(BaseApp):
                         'Status': r.json()
                     }
                 else:
-                    print "Error getting PodGroup: %s"%r.content
+                    logger.error("Error getting PodGroup: %s" % r.content)
                     return None
         return None
 
@@ -118,7 +122,7 @@ class App(BaseApp):
                 'Status': r.json()
             }
         else:
-            print "Error getting Dependency: %s"%r.content
+            logger.error("Error getting Dependency: %s" % r.content)
             return None
 
     def get_resource_instance_meta(self, client_appname, context):

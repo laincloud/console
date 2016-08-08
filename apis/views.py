@@ -213,6 +213,7 @@ class AppApi:
         portals = []
         procs_who_have_status = []
         if app_status:
+            data['deployerror'] = last_error if last_error else app_status['LastError']
             for pg_status in app_status['PodGroups']:
                 pg_name = pg_status['Name']
                 procname = pg_name.split('.')[-1]
@@ -647,7 +648,7 @@ class ProcApi:
             'dnssearchs': proc_lain_conf.dns_search,
             'ports': [{'portnumber': p.port, 'porttype': p.type.name} for p in proc_lain_conf.port.values()],
             'mountpoints': proc_lain_conf.mountpoint,
-            'https_only': proc_lain_conf.https_only,
+            'httpsonly': proc_lain_conf.https_only,
             'user': proc_lain_conf.user,
             'workingdir': proc_lain_conf.working_dir,
             'entrypoint': proc_lain_conf.entrypoint,
@@ -657,15 +658,14 @@ class ProcApi:
             'depends': [],
             'url': reverse('api_proc', kwargs={'appname': appname, 'procname': proc_lain_conf.name}),
             'logs': proc_lain_conf.logs,
+            'lasterror': '',
         }
         if proc_status:
-            pods = []
-            depends = []
+            pods, depends = [], []
+            last_error = ''
             try:
                 pods_meta = proc_status['Status']['Pods']
             except:
-                pods_meta = [] if not is_portal else {}
-            if pods_meta is None:
                 pods_meta = [] if not is_portal else {}
             # handle the situation when proc is portal
             if is_portal:
@@ -674,11 +674,14 @@ class ProcApi:
                         continue
                     for pod in pods_info:
                         pods.append(ProcApi.render_pod_data(pod))
+                        last_error = pod['LastError']
             else:
                 for pod in pods_meta:
                     pods.append(ProcApi.render_pod_data(pod))
+                last_error = proc_status['Status']['LastError']
             data['pods'] = pods
             data['depends'] = depends
+            data['lasterror'] = last_error
             # patch num_instances / cpu / memory spec in deploy to LainConf
             try:
                 data['numinstances'] = proc_status['Status']['Spec']['NumInstances']
