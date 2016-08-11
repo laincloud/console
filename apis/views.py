@@ -673,9 +673,9 @@ class ProcApi:
                     for client_name, pods_info in pods_meta.iteritems():
                         if client and client != client_name:
                             continue
-                    for pod in pods_info:
-                        pods.append(ProcApi.render_pod_data(pod))
-                        last_error = pod['LastError']
+                        for pod in pods_info:
+                            pods.append(ProcApi.render_pod_data(pod))
+                            last_error = pod['LastError']
                 else:
                     for pod in pods_meta:
                         pods.append(ProcApi.render_pod_data(pod))
