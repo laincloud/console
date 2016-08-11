@@ -667,18 +667,19 @@ class ProcApi:
                 pods_meta = proc_status['Status']['Pods']
             except:
                 pods_meta = [] if not is_portal else {}
-            # handle the situation when proc is portal
-            if is_portal:
-                for client_name, pods_info in pods_meta.iteritems():
-                    if client and client != client_name:
-                        continue
+            if pods_meta is not None:
+                # handle the situation when proc is portal
+                if is_portal:
+                    for client_name, pods_info in pods_meta.iteritems():
+                        if client and client != client_name:
+                            continue
                     for pod in pods_info:
                         pods.append(ProcApi.render_pod_data(pod))
                         last_error = pod['LastError']
-            else:
-                for pod in pods_meta:
-                    pods.append(ProcApi.render_pod_data(pod))
-                last_error = proc_status['Status']['LastError']
+                else:
+                    for pod in pods_meta:
+                        pods.append(ProcApi.render_pod_data(pod))
+                    last_error = proc_status['Status']['LastError']
             data['pods'] = pods
             data['depends'] = depends
             data['lasterror'] = last_error
