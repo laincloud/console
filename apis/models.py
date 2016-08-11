@@ -75,7 +75,7 @@ class App(BaseApp):
                     last_error = r.json()['LastError']
                     podgroups.append({'Name': pg.Name, 'Status': r.json()})
                 else:
-                    logger.error("Error getting PodGroup: %s" % r.content)
+                    logger.warning("cannot get PodGroup: %s" % r.content)
             except Exception, e:
                 podgroups.append({'Name': pg.Name, 'Status': 'Error getting PodGroup: %s' % e})
                 logger.error("Error getting PodGroup: %s" % e)
@@ -85,9 +85,9 @@ class App(BaseApp):
                 if r.status_code < 400:
                     portals.append({'Name': ps.Name, 'Status': r.json()})
                 else:
-                    logger.error("Error getting Portal: %s" % r.content)
+                    logger.warning("cannot get Portal: %s" % r.content)
             except Exception, e:
-                portals.append({'Name': ps.Name, 'Status': 'Error getting Portal: %s'%e})
+                portals.append({'Name': ps.Name, 'Status': 'Error getting Portal: %s' % e})
                 logger.error("Error getting Portal: %s" % e)
         status['LastError'] = last_error
         return status
