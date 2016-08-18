@@ -11,7 +11,7 @@ env/
 .ropeproject/
 .coverage
 /site/
-logs
+logs/console_log
 static
 src
 .cache/

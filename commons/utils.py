@@ -12,19 +12,12 @@ from docker import Client
 from docker.utils import create_ipam_config, create_ipam_pool
 from cStringIO import StringIO
 from .miscs import NoAvailableImages
-from .libs import get_etcd_client, retry_if_etcd_error, get_extra_domains
+from .libs import get_etcd_client, retry_if_etcd_error
 from .settings import (PRIVATE_REGISTRY, DOCKER_BASE_URL,
                        ETCD_AUTHORITY, CALICOCTL_BIN, CALICO_NETWORK,
                        HOST_NETWORK_ETCD_KEY, DEBUG, 
                        SYSTEM_VOLUMES_ETCD_PREFIX, CALICO_RULE_KEY)
 from log import logger
-
-
-def extra_domains():
-    try:
-        return get_extra_domains("/lain/config/extra_domains", ETCD_AUTHORITY)
-    except:
-        return []
 
 
 @retry(wait_fixed=200, stop_max_attempt_number=3, retry_on_exception=retry_if_etcd_error)

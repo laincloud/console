@@ -6,7 +6,10 @@ from lain_sdk.yaml.parser import (
     resource_instance_name,
     ProcType,
 )
-from .base_app import BaseApp
+from .base_app import (
+    BaseApp,
+    get_domains,
+)
 from .specs import (
     json_of_spec,
     AppType,
@@ -18,7 +21,10 @@ from commons.utils import (
     add_calico_profile_for_app,
 )
 from commons.settings import (
-    PRIVATE_REGISTRY, DOMAIN, APISERVER, APPS_ETCD_PREFIX
+    PRIVATE_REGISTRY,
+    APISERVER,
+    APPS_ETCD_PREFIX,
+    main_domain,
 )
 from log import logger
 
@@ -129,7 +135,7 @@ class App(BaseApp):
         return render_resource_instance_meta(
             self.appname, self.meta_version, self.meta,
             client_appname, context,
-            PRIVATE_REGISTRY, DOMAIN
+            PRIVATE_REGISTRY, get_domains()
         )
 
     # Three parts in app updating:
@@ -277,7 +283,7 @@ class App(BaseApp):
                 c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
                 c.set_env('LAIN_PROCNAME', portal_proc_name)
                 c.set_env('LAIN_SERVICE_NAME', self.get_service_name_from_portal_name(portal_proc_name))
-                c.set_env('LAIN_DOMAIN', DOMAIN)
+                c.set_env('LAIN_DOMAIN', main_domain())
             now_dependency = self.dependency_status(dp_spec.Name)
             if now_dependency:
                 portal_r = self.default_deploy.update_dependency(json_of_spec(dp_spec))
@@ -449,7 +455,7 @@ class App(BaseApp):
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
             c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
             c.set_env('LAIN_PROCNAME', podgroup_spec.Name.split(".")[-1])
-            c.set_env('LAIN_DOMAIN', DOMAIN)
+            c.set_env('LAIN_DOMAIN', main_domain())
         if now_status is None:
             return self.default_deploy.create_podgroup(json_of_spec(podgroup_spec))
         else:
@@ -469,7 +475,7 @@ class App(BaseApp):
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
             c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
             c.set_env('LAIN_PROCNAME', podgroup_spec.Name.split(".")[-1])
-            c.set_env('LAIN_DOMAIN', DOMAIN)
+            c.set_env('LAIN_DOMAIN', main_domain())
         if now_status is None:
             return self.default_deploy.create_podgroup(json_of_spec(podgroup_spec))
         else:
