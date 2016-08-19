@@ -6,7 +6,7 @@ import collections
 from etcd import EtcdKeyNotFound
 from .specs import render_app_spec, AppType
 from lain_sdk.yaml.parser import ProcType, LainConf
-from commons.settings import PRIVATE_REGISTRY, DOMAIN
+from commons.settings import PRIVATE_REGISTRY, DOMAIN, extra_domains
 from commons.utils import (
     normalize_meta_version,
     search_images_from_registry,
@@ -16,7 +16,6 @@ from commons.utils import (
     set_value_to_etcd,
     get_meta_version_from_tag,
     get_current_time,
-    extra_domains,
 )
 from commons.miscs import (
     InvalidMetaVersion,
@@ -36,7 +35,6 @@ APP_RUNNING_STATE = {
 
 def get_domains():
     return [DOMAIN] + extra_domains()
-
 
 class BaseApp:
 

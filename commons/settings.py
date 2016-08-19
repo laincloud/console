@@ -1,18 +1,31 @@
 # -*- coding: utf-8
 
 from os import environ
-from .libs import get_etcd_value
+from .libs import get_etcd_value, get_extra_domains
 
 DOCKER_BASE_URL = environ.get("CONSOLE_DOCKER_BASE_URL", "docker.lain:2375")
 ETCD_AUTHORITY = environ.get("CONSOLE_ETCD_HOST", "etcd.lain:4001")
 CALICOCTL_BIN = environ.get("CALICOCTL_BIN", "/externalbin/calicoctl")
 RFP_BIN = environ.get("RFP_BIN", "/externalbin/rfpctl")
+
 try:
-    DOMAIN = environ.get("CONSOLE_DOMAIN", None)
-    if DOMAIN is None:
-        DOMAIN = get_etcd_value("/lain/config/domain", ETCD_AUTHORITY)
+    DOMAIN = get_etcd_value("/lain/config/domain", ETCD_AUTHORITY)
 except:
     DOMAIN = 'example.lain.com'
+
+def extra_domains():
+    try:
+        return get_extra_domains("/lain/config/extra_domains", ETCD_AUTHORITY)
+    except:
+        return []
+
+def main_domain():
+    domains = extra_domains()
+    try:
+        return domains[0]
+    except:
+        return DOMAIN
+
 PRIVATE_REGISTRY = environ.get("CONSOLE_PRIVATE_REGISTRY", "registry.%s" % DOMAIN)
 APISERVER = environ.get("CONSOLE_APISERVER", "http://deploy.%s" % DOMAIN)
 SERVER_NAME = environ.get("CONSOLE_SERVER_NAME", "console.%s" % DOMAIN)
@@ -32,8 +45,8 @@ SSO_GRANT_TYPE = environ.get("SSO_GRANT_TYPE", "authorization_code")
 SSO_REDIRECT_URI = environ.get("SSO_REDIRECT_URI", "%s://console.%s/api/v1/authorize/" % (CONSOLE_API_SCHEME, DOMAIN))
 CONSOLE_AUTH_COMPLETE_URL = environ.get("CONSOLE_AUTH_COMPLETE_URL", "%s://console.%s/archon/authorize/complete" % (CONSOLE_API_SCHEME, DOMAIN))
 # sso group name setting
-SSO_GROUP_NAME_PREFIX = environ.get("SSO_GROUP_NAME_PREFIX", "ConsoleApp" + DOMAIN)
-SSO_GROUP_FULLNAME_PREFIX = environ.get("SSO_GROUP_FULLNAME_PREFIX", "Console APP in %s: " % DOMAIN)
+SSO_GROUP_NAME_PREFIX = environ.get("SSO_GROUP_NAME_PREFIX", "ConsoleApp" + main_domain())
+SSO_GROUP_FULLNAME_PREFIX = environ.get("SSO_GROUP_FULLNAME_PREFIX", "Console APP in %s: " % main_domain())
 
 try:
     CALICO_NETWORK = get_etcd_value("/lain/config/calico_network", ETCD_AUTHORITY)
