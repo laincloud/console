@@ -36,6 +36,8 @@ urlpatterns = [
     url(r'^api/v1/repos/(?P<appname>[^/]+)/roles/$', 'console.views.api_roles', name='api_roles'),
     url(r'^api/v1/repos/(?P<appname>[^/]+)/roles/(?P<username>[^/]+)/$', 'console.views.api_role', name='api_role'),
 
+    url(r'^api/v1/repos/(?P<appname>[^/]+)/versions/$', 'console.views.api_versions', name='api_versions'),
+
 ]
 
 urlpatterns += static('/api/v1/docs/', document_root=settings.SWAGGER_UI_ROOT)

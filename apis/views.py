@@ -265,6 +265,15 @@ class AppApi:
         return data
 
     @classmethod
+    def render_version_data(cls, appname, versions):
+        data = {
+            'appname': appname,
+            'tags': versions,
+            'url': reverse('api_versions', kwargs={'appname': appname}),
+        }
+        return data
+
+    @classmethod
     def check_app_exist(cls, appname):
         app = App.get_or_none(appname)
         if not app:
@@ -615,6 +624,22 @@ class AppApi:
             client.captureException()
             return (500, None,
                     'fatal error when get repo app %s:\n%s\nplease contact with admin of lain\n' % (appname, e),
+                    reverse('api_repo', kwargs={'appname': appname}))
+
+    @classmethod
+    def get_versions(cls, appname, options=None):
+        try:
+            app = App.get_or_none(appname)
+            availabe_meta_versions = app.availabe_meta_versions()
+            return (200, AppApi.render_version_data(appname, availabe_meta_versions),
+                    '', reverse('api_versions', kwargs={'appname': appname}))
+        except NoAvailableImages, e:
+            return (404, None, 'no avaible images for app %s:\n%s\nplease push images first.' % (appname, e), 
+                    reverse('api_versions', kwargs={'appname': appname}))
+        except Exception, e:
+            client.captureException()
+            return (500, None,
+                    'fatal error when getting version of app %s:\n%s\nplease contact with admin of lain\n' % (appname, e),
                     reverse('api_repo', kwargs={'appname': appname}))
 
 

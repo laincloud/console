@@ -206,8 +206,7 @@ class BaseApp:
             if meta_version:
                 _timestamp = float(meta_version.split('-')[0])
                 versions[_timestamp] = meta_version
-        ordered_versions = collections.OrderedDict(sorted(versions.items(),
-                                                          reverse=True))
+        ordered_versions = collections.OrderedDict(sorted(versions.items(), reverse=True))
         logger.debug("finish getting available meta version of app %s" % self.appname)
         return ordered_versions.values()
 
