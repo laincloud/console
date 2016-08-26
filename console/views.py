@@ -331,5 +331,18 @@ def api_role(request, appname, username):
         return _invalid_request_method('role', request.method)
 
 
+def api_versions(request, appname):
+    if request.method != 'GET':
+        return _invalid_request_method('version', request.method)
+    else:
+        return api_version_get(request, appname)
+
+
+@permission_required('maintain')
+def api_version_get(request, appname):
+    status_code, view_object, msg, url = AppApi.get_versions(appname)
+    return render_json_response(status_code, 'version', view_object, msg, url)
+
+
 def _invalid_request_method(object_type, method):
     return render_json_response(405, object_type, None, 'invalid http method %s' % method, reverse('api_docs'))
