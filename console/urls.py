@@ -41,5 +41,3 @@ urlpatterns = [
 ]
 
 urlpatterns += static('/api/v1/docs/', document_root=settings.SWAGGER_UI_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-urlpatterns += static('/public/', document_root=settings.CONSOLE_UI_ROOT)
