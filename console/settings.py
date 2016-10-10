@@ -121,18 +121,6 @@ USE_TZ = True
 
 SWAGGER_UI_ROOT = os.path.join(BASE_DIR, "swagger-ui/")
 
-CONSOLE_UI_ROOT = os.path.join(BASE_DIR, "console-ui/", "public/")
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
-
-STATIC_URL = '/static/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "console/", "public/"),
-]
-
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_VERBOSE = True
 TEST_OUTPUT_DESCRIPTIONS = True
