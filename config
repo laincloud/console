@@ -1,0 +1,4 @@
+client_id=3
+client_sec="secret_in_local"
+redirect_uri="https://example.com"
+console_api_scheme="http"
