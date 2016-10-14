@@ -38,7 +38,7 @@ LAIN Console 的 API 可以在[这里](docs/API.md)查看
 
 ## 工作流程
 
-Console 组件属于 LAIN 中与其他组件结合非常紧密的一个组件，与其相关的组件包括 LAIN Registry, LAIN Deployd, LAIN SSO, LAIN lvault。Console 的部署文档可以在[这里](docs/INSTALL.md)查看
+Console 组件属于 LAIN 中与其他组件结合非常紧密的一个组件，与其相关的组件包括 LAIN Registry, LAIN Deployd, LAIN SSO, LAIN lvault。Console 的部署文档可以参考 [LAIN whitepaper](https://laincloud.gitbooks.io/white-paper/content/developmanual/console/console-install.html)
 
 Console 使用 etcd 作为存储后端，apps 的部署信息及版本信息全部存储在 `/lain/console/apps/` 目录下；
 
@@ -58,4 +58,4 @@ Console 使用 etcd 作为存储后端，apps 的部署信息及版本信息全�
 
 ## Auth 设置
 
-LAIN Console 组件中关于 auth 的使用可以在[这里](docs/AUTH.md)查看
+LAIN Console 组件中关于 auth 的使用可以参考 [LAIN whitepaper](https://laincloud.gitbooks.io/white-paper/content/adminmanual/auth.html)
