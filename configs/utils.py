@@ -65,7 +65,7 @@ def generate_dockerfile(folder, config_list, defined_secret_files):
 def generate_config_file(folder, config):
     filename = str(uuid.uuid4())
     f = open(os.path.join(folder, filename), 'w')
-    f.write(config.content)
+    f.write(config.content.encode('utf-8'))
     f.close()
     return filename
 
