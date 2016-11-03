@@ -249,3 +249,11 @@ def get_system_volumes_from_etcd(appname):
 
 def get_current_time():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+
+def convert_time_from_deployd(d_time):
+    c_times = d_time.split("T")
+    if len(c_times) <= 1:
+        return d_time
+    else:
+        return "%s %s" % (c_times[0], c_times[1].split('.')[0])
