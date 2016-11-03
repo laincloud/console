@@ -657,6 +657,7 @@ class ProcApi:
                'containerport': pod['Containers'][0]['ContainerPort'],
                'nodeip': pod['Containers'][0]['NodeIp'],
                'status': str(pod['Containers'][0]['Runtime']['State']['Running']),
+               'uptime': pod['Containers'][0]['Runtime']['State']['StartedAt'],
                'envs': pod['Containers'][0]['Runtime']['Config']['Env'],
               }
 
