@@ -3,27 +3,27 @@ appname: console
 build:
   base: laincloud/centos-lain:20160503
   prepare:
-    version: "20161010"
+    version: "20161103"
     script:
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
       - git clone --depth=1 https://github.com/golang/net.git $GOPATH/src/golang.org/x/net
       - go get github.com/mijia/gobuildweb
       - cd $GOPATH/src/github.com/mijia/gobuildweb && go install
-      - cd $GOPATH/src/github.com/ && git clone https://github.com/laincloud/archon.git
-      - cd $GOPATH/src/github.com/archon && gobuildweb dist
+      - mkdir -p $GOPATH/src/github.com/laincloud
+      - cd $GOPATH/src/github.com/laincloud && git clone https://github.com/laincloud/archon.git
+      - cd $GOPATH/src/github.com/laincloud/archon && gobuildweb dist
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
     keep:
       - node_modules
   script:
-    - cd $GOPATH/src/github.com/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/
+    - cd $GOPATH/src/github.com/laincloud/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/
     - unzip -o /lain/app/archon-0.1.zip
     - pip install -r pip-req.txt
     - mv externalbin /externalbin
 
 test:
   script:
-    - mkdir logs
     - make pylint test
 
 web:

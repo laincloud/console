@@ -13,7 +13,6 @@ build:
 
 test:
   script:
-    - mkdir logs
     - make pylint test
 
 web:
