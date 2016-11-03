@@ -9,6 +9,7 @@ from authorize.models import Authorize, Group
 from configs.models import Config
 from commons.miscs import InvalidMetaVersion, NoAvailableImages
 from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES
+from commons.utils import convert_time_from_deployd
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client
@@ -657,7 +658,7 @@ class ProcApi:
                'containerport': pod['Containers'][0]['ContainerPort'],
                'nodeip': pod['Containers'][0]['NodeIp'],
                'status': str(pod['Containers'][0]['Runtime']['State']['Running']),
-               'uptime': pod['Containers'][0]['Runtime']['State']['StartedAt'],
+               'uptime': convert_time_from_deployd(pod['Containers'][0]['Runtime']['State']['StartedAt']),
                'envs': pod['Containers'][0]['Runtime']['Config']['Env'],
               }
 
