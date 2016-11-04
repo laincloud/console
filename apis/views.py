@@ -3,7 +3,7 @@
 import copy
 import humanfriendly
 from threading import Thread
-from .models import App, Resource, recursive_deploy
+from .models import App, Resource, recursive_deploy, default_deploy
 from .specs import render_podgroup_spec_from_json, AppType
 from authorize.models import Authorize, Group
 from configs.models import Config
@@ -157,6 +157,10 @@ def render_app_update_result_to_msg(update_result, is_resource_instance=False):
     msg += 'app_update_results:\n'
     msg += '%s\n' % (render_basic_app_deploy_result_to_msg(update_result if is_resource_instance else app_results))
     return msg
+
+
+def is_deployable():
+    return default_deploy.is_deployable()
 
 
 '''

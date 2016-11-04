@@ -4,10 +4,14 @@ import requests
 
 
 def send_request(method, path, body, headers):
-    return requests.request(method, path, headers=headers, json=body, timeout=60)
+    return requests.request(method, path, headers=headers, json=body, timeout=10)
+
+def get_deployd_status(apiserver):
+    url = "%s/api/status" % apiserver
+    return send_request("GET", url, None, None)
 
 def create_podgroup(podgroup_json, apiserver):
-    url = "%s/api/podgroups"%apiserver
+    url = "%s/api/podgroups" % apiserver
     headers = {"Content-Type":"application/json"}
     return send_request("POST", url, podgroup_json, headers)
 
@@ -46,5 +50,5 @@ def remove_dependency(dependency_pod_name, apiserver):
     return send_request("DELETE", url, None, None)
 
 def update_dependency(dependency_pod_json, apiserver):
-    url = "%s/api/depends" % (apiserver, )
+    url = "%s/api/depends" % apiserver
     return send_request("PUT", url, dependency_pod_json, None)

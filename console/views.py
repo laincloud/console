@@ -5,6 +5,7 @@ from django.shortcuts import render_to_response
 from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
 from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi
+from apis.views import is_deployable
 from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
 
@@ -46,6 +47,15 @@ def permission_required(permission=None):
             return fun(request, *args, **kwargs)
         return wraps(fun)(_decorator)
     return _check_permision
+
+
+def deployd_required(fun):
+    def _check_deployd_status(request, *args, **kwargs):
+        if not is_deployable():
+            return render_json_response(503, 'app', None,
+                'deployd is now in maintain state, please wait for a while', reverse('api_apps'))
+        return fun(request, *args, **kwargs)
+    return wraps(fun)(_check_deployd_status)
 
 
 def render_json_response(status_code, view_object_name, view_object, msg, url):
@@ -110,6 +120,7 @@ def api_apps(request):
         return _invalid_request_method('apps', request.method)
 
 
+@deployd_required
 @permission_required('maintain')
 def api_apps_post(request, appname, options):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
@@ -135,6 +146,7 @@ def api_app(request, appname):
         return _invalid_request_method('app', request.method)
 
 
+@deployd_required
 @permission_required('maintain')
 def api_app_high_permit(request, appname):
     if request.method == 'DELETE':
@@ -165,6 +177,7 @@ def api_procs(request, appname):
         return _invalid_request_method('procs', request.method)
 
 
+@deployd_required
 @permission_required('maintain')
 def api_procs_post(request, appname):
     try:
@@ -191,6 +204,7 @@ def api_proc(request, appname, procname):
         _invalid_request_method('proc', request.method)
 
 
+@deployd_required
 @permission_required('maintain')
 def api_proc_high_permit(request, appname, procname):
     if request.method == 'DELETE':

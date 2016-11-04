@@ -2,6 +2,7 @@
 
 import deploys.utils
 
+DEPLOYD_WORKING_STATUS = 'started'
 
 class Deploy:
     name = ''
@@ -13,6 +14,12 @@ class Deploy:
         d.name = name
         d.apiserver = apiserver
         return d
+
+    def is_deployable(self):
+        response = deploys.utils.get_deployd_status(self.apiserver)
+        if response.status_code == 200 and response.json()['status'] == DEPLOYD_WORKING_STATUS:
+            return True
+        return False
 
     def create_podgroup(self, podgroup_json):
         return deploys.utils.create_podgroup(podgroup_json, self.apiserver)
