@@ -5,6 +5,7 @@ from django.shortcuts import render_to_response
 from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
 from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi
+from apis.views import is_deployable
 from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
 
@@ -46,6 +47,15 @@ def permission_required(permission=None):
             return fun(request, *args, **kwargs)
         return wraps(fun)(_decorator)
     return _check_permision
+
+
+def deployd_required(fun):
+    def _check_deployd_status(request, *args, **kwargs):
+        if not is_deployable():
+            return render_json_response(503, 'app', None,
+                'deployd is now in maintain state, please wait for a while', reverse('api_apps'))
+        return fun(request, *args, **kwargs)
+    return wraps(fun)(_check_deployd_status)
 
 
 def render_json_response(status_code, view_object_name, view_object, msg, url):
@@ -111,6 +121,7 @@ def api_apps(request):
 
 
 @permission_required('maintain')
+@deployd_required
 def api_apps_post(request, appname, options):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
     status_code, view_object, msg, url = AppApi.create_app(access_token, appname, options)
@@ -136,6 +147,7 @@ def api_app(request, appname):
 
 
 @permission_required('maintain')
+@deployd_required
 def api_app_high_permit(request, appname):
     if request.method == 'DELETE':
         status_code, view_object, msg, url = AppApi.delete_app(appname)
@@ -166,6 +178,7 @@ def api_procs(request, appname):
 
 
 @permission_required('maintain')
+@deployd_required
 def api_procs_post(request, appname):
     try:
         options = json.loads(request.body)
@@ -192,6 +205,7 @@ def api_proc(request, appname, procname):
 
 
 @permission_required('maintain')
+@deployd_required
 def api_proc_high_permit(request, appname, procname):
     if request.method == 'DELETE':
         status_code, view_object, msg, url = ProcApi.delete_app_proc(appname, procname)
