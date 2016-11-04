@@ -120,8 +120,8 @@ def api_apps(request):
         return _invalid_request_method('apps', request.method)
 
 
-@deployd_required
 @permission_required('maintain')
+@deployd_required
 def api_apps_post(request, appname, options):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
     status_code, view_object, msg, url = AppApi.create_app(access_token, appname, options)
@@ -146,8 +146,8 @@ def api_app(request, appname):
         return _invalid_request_method('app', request.method)
 
 
-@deployd_required
 @permission_required('maintain')
+@deployd_required
 def api_app_high_permit(request, appname):
     if request.method == 'DELETE':
         status_code, view_object, msg, url = AppApi.delete_app(appname)
@@ -177,8 +177,8 @@ def api_procs(request, appname):
         return _invalid_request_method('procs', request.method)
 
 
-@deployd_required
 @permission_required('maintain')
+@deployd_required
 def api_procs_post(request, appname):
     try:
         options = json.loads(request.body)
@@ -204,8 +204,8 @@ def api_proc(request, appname, procname):
         _invalid_request_method('proc', request.method)
 
 
-@deployd_required
 @permission_required('maintain')
+@deployd_required
 def api_proc_high_permit(request, appname, procname):
     if request.method == 'DELETE':
         status_code, view_object, msg, url = ProcApi.delete_app_proc(appname, procname)
