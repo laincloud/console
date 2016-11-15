@@ -45,8 +45,8 @@ SSO_GRANT_TYPE = environ.get("SSO_GRANT_TYPE", "authorization_code")
 SSO_REDIRECT_URI = environ.get("SSO_REDIRECT_URI", "%s://console.%s/api/v1/authorize/" % (CONSOLE_API_SCHEME, main_domain()))
 CONSOLE_AUTH_COMPLETE_URL = environ.get("CONSOLE_AUTH_COMPLETE_URL", "%s://console.%s/archon/authorize/complete" % (CONSOLE_API_SCHEME, main_domain()))
 # sso group name setting
-SSO_GROUP_NAME_PREFIX = environ.get("SSO_GROUP_NAME_PREFIX", "ConsoleApp" + main_domain())
-SSO_GROUP_FULLNAME_PREFIX = environ.get("SSO_GROUP_FULLNAME_PREFIX", "Console APP in %s: " % main_domain())
+SSO_GROUP_NAME_PREFIX = environ.get("SSO_GROUP_NAME_PREFIX", "lainapp-%s" % main_domain())
+SSO_GROUP_FULLNAME_PREFIX = environ.get("SSO_GROUP_FULLNAME_PREFIX", "lain app in %s: " % main_domain())
 
 try:
     CALICO_NETWORK = get_etcd_value("/lain/config/calico_network", ETCD_AUTHORITY)
