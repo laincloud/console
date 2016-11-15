@@ -14,7 +14,6 @@ from log import logger
 
 
 # parameters for sso auth
-group_prefix = "ca"  # sso request the first character of the group_name to be [a-zA-Z]
 appname_prefix = SSO_GROUP_NAME_PREFIX
 group_fullname_prefix = SSO_GROUP_FULLNAME_PREFIX
 client_id = SSO_CLIENT_ID
@@ -30,7 +29,7 @@ def send_request(method, path, headers, json, params):
 
 
 def get_group_name_for_app(appname):
-    return "%s%s" % (group_prefix, hashlib.md5(appname_prefix + appname).hexdigest()[0:30])
+    return (appname_prefix + "-" + appname).replace('.', '-')
 
 
 def get_group_fullname_for_app(appname):
