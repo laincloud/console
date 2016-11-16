@@ -28,7 +28,7 @@ def main_domain():
 
 PRIVATE_REGISTRY = environ.get("CONSOLE_PRIVATE_REGISTRY", "registry.%s" % DOMAIN)
 APISERVER = environ.get("CONSOLE_APISERVER", "http://deploy.%s" % DOMAIN)
-SERVER_NAME = environ.get("CONSOLE_SERVER_NAME", "console.%s" % DOMAIN)
+SERVER_NAME = environ.get("CONSOLE_SERVER_NAME", "console.%s" % main_domain())
 APPS_ETCD_PREFIX = environ.get("CONSOLE_APPS_ETCD_PREFIX", "/lain/console/apps")
 DEBUG = environ.get("CONSOLE_DEBUG", False)
 
