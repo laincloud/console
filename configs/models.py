@@ -7,10 +7,11 @@ from log import logger
 
 class Secret:
 
-    def __init__(self, path, content, timestamp):
+    def __init__(self, path, content, timestamp, mode):
         self.path = self.get_absulute_path(path)
         self.content = content
         self.timestamp = timestamp
+        self.mode = mode
 
     def get_absulute_path(self, path):
         path_list = path.split('/')[2:]
@@ -36,7 +37,7 @@ class Config:
                     appname, procname))
             secret_files = response.json()
             for s in secret_files:
-                config_list.append(Secret(s['path'], s['content'], s['timestamp']))
+                config_list.append(Secret(s['path'], s['content'], s['timestamp'], s['mode']))
             return config_list
         except Exception, e:
             cls.handle_error("Exception get configs from lvault for proc %s : %s" % (
