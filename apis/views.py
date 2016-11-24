@@ -172,8 +172,9 @@ console.views 将上面的 turple 封装成 JsonResponse
 class AppApi:
 
     @classmethod
-    def render_app_data(cls, appname, app_lain_conf, app_type, last_error, last_update,
-                        app_status=None, iteration=True, client=None):
+    def render_app(cls, app, iteration=True, client=None, use_portals=[]):
+        appname, app_lain_conf, app_type = app.appname, app.lain_config, app.app_type
+        last_error, last_update, app_status = app.last_error, app.last_update, app.app_status
         data = {
             'appname': appname,
             'apptype': app_type,
@@ -184,39 +185,39 @@ class AppApi:
             'portals': [],
             'useservices': [],
             'useresources': [],
-            'resourceinstances': [],
             'url': reverse('api_app', kwargs={'appname': appname})
         }
         if app_lain_conf is None:
             return data
-
         data['metaversion'] = app_lain_conf.meta_version
+
         if iteration:
-            useservices = []
-            useresources = []
-            for service_appname, service_procname_list in app_lain_conf.use_services.iteritems():
-                service = App.get_or_none(service_appname)
-                useservices.append({
-                    'servicename': service_appname,
-                    'serviceprocs': service_procname_list,
-                    'service': {} if not service or not service.is_reachable() else
-                        AppApi.render_app(service, iteration=False, client=app_lain_conf.appname)
-                })
+            if len(app_lain_conf.use_services) > 0:
+                useservices = []
+                for service_appname, service_procname_list in app_lain_conf.use_services.iteritems():
+                    service = App.get_or_none(service_appname)
+                    use_portal_list = [App.get_portal_name_from_service_name(service, s) for s in service_procname_list]
+                    useservices.append({
+                        'servicename': service_appname,
+                        'serviceprocs': use_portal_list,
+                        'service': {} if not service or not service.is_reachable() else
+                            AppApi.render_app(service, iteration=False, client=app_lain_conf.appname, use_portals=use_portal_list)
+                    })
+                data['useservices'] = useservices
+            if len(app_lain_conf.use_resources) > 0:
+                useresources = []
+                for resource_appname, resource_info in app_lain_conf.use_resources.iteritems():
+                    instance = App.get_or_none(resource_instance_name(resource_appname, app_lain_conf.appname))
+                    use_portal_list = [App.get_portal_name_from_service_name(instance, s) for s in resource_info['services']]
+                    useresources.append({
+                        'resourcename': resource_appname,
+                        'resourceprocs': use_portal_list,
+                        'resourceinstance' : {} if not instance or not instance.is_reachable() else
+                            AppApi.render_app(instance, iteration=False, client=app_lain_conf.appname, use_portals=use_portal_list)
+                    })
+                data['useresources'] = useresources
 
-            for resource_appname, resource_info in app_lain_conf.use_resources.iteritems():
-                instance = App.get_or_none(resource_instance_name(resource_appname, app_lain_conf.appname))
-                useresources.append({
-                    'resourcename': resource_appname,
-                    'resourceprocs': resource_info['services'],
-                    'resourceinstance' : {} if not instance or not instance.is_reachable() else
-                        AppApi.render_app(instance, iteration=False, client=app_lain_conf.appname)
-                })
-            data['useservices'] = useservices
-            data['useresources'] = useresources
-
-        procs = []
-        portals = []
-        procs_who_have_status = []
+        procs, portals = [], []
         if app_status:
             data['deployerror'] = last_error if last_error else app_status['LastError']
             for pg_status in app_status['PodGroups']:
@@ -225,23 +226,24 @@ class AppApi:
                 proc_lain_conf = app_lain_conf.procs.get(procname, None)
                 if proc_lain_conf:
                     procs.append(ProcApi.render_proc_data(app_lain_conf.appname, proc_lain_conf, pg_status))
-                    procs_who_have_status.append(procname)
             for ps_status in app_status['Portals']:
-                    ps_name = ps_status['Name']
-                    portalname = ps_name.split('.')[-1]
-                    portal_lain_conf = app_lain_conf.procs.get(portalname, None)
-                    if portal_lain_conf:
-                        if not iteration:
+                ps_name = ps_status['Name']
+                portalname = ps_name.split('.')[-1]
+                portal_lain_conf = app_lain_conf.procs.get(portalname, None)
+                if portal_lain_conf:
+                    if not iteration:
+                        if portalname in use_portals:
                             portals.append(ProcApi.render_proc_data(app_lain_conf.appname, portal_lain_conf, ps_status, is_portal=True, client=client))
-                        else:
-                            portals.append(ProcApi.render_proc_data(app_lain_conf.appname, portal_lain_conf, ps_status, is_portal=True))
-                        procs_who_have_status.append(portalname)
-        for proc in app_lain_conf.procs.values():
-            if proc.name not in procs_who_have_status:
+                    else:
+                        portals.append(ProcApi.render_proc_data(app_lain_conf.appname, portal_lain_conf, ps_status, is_portal=True))
+        else:
+            # resource apps donot have app status
+            for proc in app_lain_conf.procs.values():
                 if proc.type == ProcType.portal:
                     portals.append(ProcApi.render_proc_data(app_lain_conf.appname, proc))
                 else:
                     procs.append(ProcApi.render_proc_data(app_lain_conf.appname, proc))
+
         data['procs'] = procs
         data['portals'] = portals
 
@@ -251,15 +253,6 @@ class AppApi:
                 instances.append(AppApi.render_app(instance))
             data['resourceinstances'] = instances
         return data
-
-    @classmethod
-    def render_app(cls, app, iteration=True, client=None):
-        try:
-            return cls.render_app_data(app.appname, app.lain_config, app.app_type, app.last_error,
-                                       app.last_update, app.app_status, iteration=iteration, client=client)
-        except Exception, e:
-            logger.error("render app %s error: %s" % (app.appname, str(e)))
-            raise e
 
     @classmethod
     def render_repo_data(cls, appname):
@@ -691,13 +684,10 @@ class ProcApi:
             'logs': proc_lain_conf.logs,
             'lasterror': '',
         }
-        if proc_status:
+        if proc_status and isinstance(proc_status['Status'], dict):
             pods, depends = [], []
             last_error = ''
-            try:
-                pods_meta = proc_status['Status']['Pods']
-            except:
-                pods_meta = [] if not is_portal else {}
+            pods_meta = proc_status['Status']['Pods']
             if pods_meta is not None:
                 # handle the situation when proc is portal
                 if is_portal:

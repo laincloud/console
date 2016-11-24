@@ -64,9 +64,7 @@ class App(BaseApp):
     def app_status(self):
         if self.lain_config is None or self.get_app_type() == AppType.Resource:
             return None
-        deploy = self.default_deploy
-        podgroups = []
-        portals = []
+        podgroups, portals = [], []
         last_error = ''
         status = {
             'AppName': self.appname,
@@ -75,26 +73,18 @@ class App(BaseApp):
             'LastError': last_error,
         }
         for pg in self.app_spec.PodGroups:
-            try:
-                r = deploy.get_podgroup(pg.Name)
-                if r.status_code < 400:
-                    last_error = r.json()['LastError']
-                    podgroups.append({'Name': pg.Name, 'Status': r.json()})
-                else:
-                    logger.warning("cannot get PodGroup: %s" % r.content)
-            except Exception, e:
-                podgroups.append({'Name': pg.Name, 'Status': 'Error getting PodGroup: %s' % e})
-                logger.error("Error getting PodGroup: %s" % e)
+            pg_status = self.podgroup_status(pg.Name)
+            if pg_status is None:
+                podgroups.append({'Name': pg.Name, 'Status': 'Error getting PodGroup'})
+            else:
+                last_error = pg_status['Status']['LastError']
+                podgroups.append(pg_status)
         for ps in self.app_spec.Portals:
-            try:
-                r = deploy.get_dependency(ps.Name)
-                if r.status_code < 400:
-                    portals.append({'Name': ps.Name, 'Status': r.json()})
-                else:
-                    logger.warning("cannot get Portal: %s" % r.content)
-            except Exception, e:
-                portals.append({'Name': ps.Name, 'Status': 'Error getting Portal: %s' % e})
-                logger.error("Error getting Portal: %s" % e)
+            ps_status = self.dependency_status(ps.Name)
+            if ps_status is None:
+                portals.append({'Name': ps.Name, 'Status': 'Error getting Portal'})
+            else:
+                portals.append(ps_status)
         status['LastError'] = last_error
         return status
 
