@@ -8,23 +8,23 @@ from lain_sdk.yaml.parser import (
 )
 from .base_app import (
     BaseApp,
-    get_domains,
 )
 from .specs import (
     json_of_spec,
     AppType,
 )
-from commons.utils import (
+from .utils import (
     docker_network_exists,
     docker_network_remove,
     calicoctl_profile_rule_op,
     add_calico_profile_for_app,
+    get_domains,
 )
 from commons.settings import (
     PRIVATE_REGISTRY,
     APISERVER,
     APPS_ETCD_PREFIX,
-    main_domain,
+    MAIN_DOMAIN,
 )
 from log import logger
 
@@ -273,7 +273,7 @@ class App(BaseApp):
                 c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
                 c.set_env('LAIN_PROCNAME', portal_proc_name)
                 c.set_env('LAIN_SERVICE_NAME', self.get_service_name_from_portal_name(portal_proc_name))
-                c.set_env('LAIN_DOMAIN', main_domain())
+                c.set_env('LAIN_DOMAIN', MAIN_DOMAIN)
             now_dependency = self.dependency_status(dp_spec.Name)
             if now_dependency:
                 portal_r = self.default_deploy.update_dependency(json_of_spec(dp_spec))
@@ -445,7 +445,7 @@ class App(BaseApp):
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
             c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
             c.set_env('LAIN_PROCNAME', podgroup_spec.Name.split(".")[-1])
-            c.set_env('LAIN_DOMAIN', main_domain())
+            c.set_env('LAIN_DOMAIN', MAIN_DOMAIN)
         if now_status is None:
             return self.default_deploy.create_podgroup(json_of_spec(podgroup_spec))
         else:
@@ -465,7 +465,7 @@ class App(BaseApp):
             c.set_env('LAIN_APPNAME', podgroup_spec.Namespace)
             c.set_env('LAIN_APP_RELEASE_VERSION', self.meta_version)
             c.set_env('LAIN_PROCNAME', podgroup_spec.Name.split(".")[-1])
-            c.set_env('LAIN_DOMAIN', main_domain())
+            c.set_env('LAIN_DOMAIN', MAIN_DOMAIN)
         if now_status is None:
             return self.default_deploy.create_podgroup(json_of_spec(podgroup_spec))
         else:

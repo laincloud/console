@@ -2,7 +2,7 @@
 
 import pytest
 
-from commons.utils import get_meta_version_from_tag
+from apis.utils import get_meta_version_from_tag
 
 
 def test_get_meta_version_from_tag():
