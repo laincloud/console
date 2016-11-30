@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 
 from os import environ
-from .utils import get_etcd_value, get_extra_domains
+from .utils import get_etcd_value, get_extra_domains, get_system_volumes
 
 # if not set extra domains, main domain of the cluster will be the default domain,
 # or main domain will be the first domain in extra domains list
@@ -19,6 +19,7 @@ SERVER_NAME = environ.get("CONSOLE_SERVER_NAME", "console.%s" % MAIN_DOMAIN)
 APPS_ETCD_PREFIX = environ.get("CONSOLE_APPS_ETCD_PREFIX", "/lain/console/apps")
 DEBUG = environ.get("CONSOLE_DEBUG", False)
 SYSTEM_VOLUMES_ETCD_PREFIX = environ.get("CONSOLE_SYSTEM_VOLUMES_ETCD_PREFIX", "/lain/config/system_volumes")
+SYSTEM_VOLUMES = get_system_volumes(SYSTEM_VOLUMES_ETCD_PREFIX, ETCD_AUTHORITY)
 
 
 # console auth related setting

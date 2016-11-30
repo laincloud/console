@@ -49,3 +49,16 @@ def get_extra_domains(key, etcd_authority):
     v = get_etcd_value(key, etcd_authority, default='[]')
     return json.loads(v)
 
+
+def get_system_volumes(key, etcd_authority):
+    system_volumes = {}
+    try:
+        system_volumes_r = read_from_etcd(key, etcd_authority)
+        for l in system_volumes_r.leaves:
+            appname = l.key[len(key)+1:]
+            v = get_etcd_value(l, etcd_authority, default="")
+            sys_vol = [] if v == "" else v.split(";")
+            system_volumes[appname] = sys_vol
+        return system_volumes
+    except Exception:
+        return {}

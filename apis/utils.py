@@ -15,7 +15,7 @@ from commons.miscs import NoAvailableImages
 import commons.utils
 from commons.settings import (PRIVATE_REGISTRY, DOCKER_BASE_URL, DEBUG,
                        ETCD_AUTHORITY, CALICOCTL_BIN, CALICO_NETWORK,
-                       SYSTEM_VOLUMES_ETCD_PREFIX, CALICO_RULE_KEY, 
+                       SYSTEM_VOLUMES, CALICO_RULE_KEY, 
                        DOMAIN, EXTRA_DOMAINS)
 from log import logger
 
@@ -223,12 +223,7 @@ def calicoctl_profile_rule_op(profile, op):
 
 
 def get_system_volumes_from_etcd(appname):
-    key = "%s/%s" % (SYSTEM_VOLUMES_ETCD_PREFIX, appname)
-    try:
-        v = read_from_etcd(key).value  # pylint: disable=no-member
-        return [] if v == "" else v.split(";")
-    except Exception, e:
-        return []
+    return SYSTEM_VOLUMES.get(appname, [])
 
 
 def get_current_time():
