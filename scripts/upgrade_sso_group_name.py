@@ -10,7 +10,7 @@ import getpass
 import optparse
 import sys
 import hashlib
-from commons.settings import main_domain
+from commons.settings import MAIN_DOMAIN
 from commons.utils import read_from_etcd
 from authorize.utils import create_group_for_app, add_group_member, add_group_member_for_admin
 
@@ -110,7 +110,7 @@ def get_console_apps(access_token):
 
 def get_former_groupname(appname):
     group_prefix = 'ca'
-    appname_prefix = "ConsoleApp" + main_domain()
+    appname_prefix = "ConsoleApp" + MAIN_DOMAIN
     return "%s%s" % (group_prefix, hashlib.md5(
         appname_prefix + appname).hexdigest()[0:30])
 

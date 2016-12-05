@@ -6,7 +6,7 @@ import humanfriendly
 import json
 import jsonpickle
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
-from commons.utils import get_system_volumes_from_etcd
+from .utils import get_system_volumes_from_etcd
 
 class AppType:
 

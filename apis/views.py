@@ -9,7 +9,7 @@ from authorize.models import Authorize, Group
 from configs.models import Config
 from commons.miscs import InvalidMetaVersion, NoAvailableImages
 from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES
-from commons.utils import convert_time_from_deployd
+from .utils import convert_time_from_deployd
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client

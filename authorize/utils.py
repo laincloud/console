@@ -1,13 +1,12 @@
 # -*- coding: utf-8
 
 import json
-import hashlib
 import requests
 from django import http
 from urllib import urlencode
 from urlparse import urlparse, parse_qs
 from commons.utils import read_from_etcd
-from commons.settings import (SSO_GROUP_NAME_PREFIX, SSO_GROUP_FULLNAME_PREFIX,
+from commons.settings import (ETCD_AUTHORITY, SSO_GROUP_NAME_PREFIX, SSO_GROUP_FULLNAME_PREFIX,
                     SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_REDIRECT_URI, SSO_GRANT_TYPE,
                     CONSOLE_AUTH_COMPLETE_URL, CONSOLE_NEED_AUTH_ETCD_KEY) 
 from log import logger
@@ -48,7 +47,7 @@ def _get_sso_server():
 
 def _get_auth_msg():
     try:
-        need_auth_r = read_from_etcd(CONSOLE_NEED_AUTH_ETCD_KEY)
+        need_auth_r = read_from_etcd(CONSOLE_NEED_AUTH_ETCD_KEY, ETCD_AUTHORITY)
         auth = json.loads(need_auth_r.value)  # pylint: disable=no-member
         return auth['type'], auth['url']
     except Exception:
