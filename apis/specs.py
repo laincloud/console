@@ -28,6 +28,7 @@ class DependencyPolicy:
     NamespaceLevel = 0
     NodeLevel = 1
 
+
 class Dependency:
 
     PodName = ''
@@ -53,6 +54,31 @@ class ImSpec:
     CreateAt = None
     UpdateAt = None
 
+
+class CloudVolumeSpec:
+
+    Type = ''
+    Dirs = []
+
+    def clone(self):
+        cv = CloudVolumeSpec()
+        cv.Type = self.Type
+        cv.Dirs = self.Dirs
+        return cv
+
+    def verify_params(self):
+        return \
+            isinstance(self.Type, str) and \
+            isinstance(self.Dirs, list)
+
+    def equals(self, cv):
+        if not isinstance(cv, CloudVolumeSpec):
+            return False
+        return \
+            cv.Type == self.Type and \
+            cv.Dirs == self.Dirs
+
+
 class LogConfigSpec:
 
     Type = ''
@@ -74,6 +100,7 @@ class LogConfigSpec:
             s.Type == self.Type and \
             s.Config == self.Config
 
+
 class ContainerSpec(ImSpec):
 
     Image = ''
@@ -83,6 +110,7 @@ class ContainerSpec(ImSpec):
     DnsSearch = []
     Volumes = []
     SystemVolumes = []
+    CloudVolumes = []
     Command = []
     Entrypoint = []
     CpuLimit = 0
@@ -104,6 +132,7 @@ class ContainerSpec(ImSpec):
         s.DnsSearch = copy.deepcopy(self.DnsSearch)
         s.Volumes = copy.deepcopy(self.Volumes)
         s.SystemVolumes = copy.deepcopy(self.SystemVolumes)
+        s.CloudVolumes = copy.deepcopy(self.CloudVolumes)
         s.Command = copy.deepcopy(self.Command)
         s.Entrypoint = copy.deepcopy(self.Entrypoint)
         s.CpuLimit = self.CpuLimit
@@ -141,6 +170,7 @@ class ContainerSpec(ImSpec):
             s.DnsSearch == self.DnsSearch and \
             s.Volumes == self.Volumes and \
             s.SystemVolumes == self.SystemVolumes and \
+            s.CloudVolumes == self.CloudVolumes and \
             s.Command == self.Command and \
             s.Entrypoint == self.Entrypoint and \
             s.CpuLimit == self.CpuLimit and \
@@ -153,6 +183,7 @@ class ContainerSpec(ImSpec):
             if re.match("%s\s*="%env_key, i):
                 self.Env.remove(i)
         self.Env.append("%s=%s" % (env_key, env_value))
+
 
 class PodSpec(ImSpec):
 
@@ -335,6 +366,7 @@ def render_container_spec(app_name, proc):
     c.DnsSearch = [] if not hasattr(proc, 'dns_search') else copy.deepcopy(proc.dns_search)
     c.Volumes = copy.deepcopy(proc.volumes)
     c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
+    c.CloudVolumes = render_cloud_volumes(proc.cloud_volumes)
     c.Command = proc.cmd
     c.Entrypoint = proc.entrypoint
     c.CpuLimit = proc.cpu
@@ -353,6 +385,15 @@ def render_dependency(service_app, service):
     )
     d.Policy = DependencyPolicy.NamespaceLevel # TODO allow user definiton
     return d
+
+def render_cloud_volumes(cloud_volumes):
+    volumes = []
+    for vol_type, vol_dirs in cloud_volumes.iteritems():
+        cv = CloudVolumeSpec()
+        cv.Type = vol_type
+        cv.Dirs = vol_dirs
+        volumes.append(cv)
+    return volumes
 
 def json_of_spec(spec):
     return json.loads(jsonpickle.encode(spec, unpicklable=False))
@@ -398,6 +439,10 @@ def render_container_spec_from_json(app_name, spec_json):
     c.DnsSearch = copy.deepcopy(spec_json['DnsSearch']) if spec_json.get('DnsSearch') else []
     c.Volumes = copy.deepcopy(spec_json['Volumes'])
     c.SystemVolumes = copy.deepcopy(spec_json['SystemVolumes'])
+    cloud_volumes = spec_json.get('CloudVolumes')
+    if not isinstance(cloud_volumes, list):
+        cloud_volumes = []
+    c.CloudVolumes = [render_cloud_volumes_spec_from_json(cv) for cv in cloud_volumes]
     command = spec_json.get('Command')
     if not command:
         command = []
@@ -420,3 +465,9 @@ def render_dependency_from_json(spec_json):
     d.PodName = spec_json['PodName']
     d.Policy = spec_json['Policy']
     return d
+
+def render_cloud_volumes_spec_from_json(spec_json):
+    cv = CloudVolumeSpec()
+    cv.Type = spec_json['Type']
+    cv.Dirs = spec_json['Dirs']
+    return cv
