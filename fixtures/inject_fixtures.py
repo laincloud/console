@@ -18,22 +18,22 @@ def images_in_registry(monkeypatch):
 @pytest.fixture
 def etcd_operations(monkeypatch):
     import apis.base_app
-    import commons.utils
     etcd_operations = {
         'read_from_etcd': Mock(),
         'delete_from_etcd': Mock(),
         'set_value_to_etcd': Mock(),
-        'utils_read_from_etcd': Mock(),
-        'utils_delete_from_etcd': Mock(),
-        'utils_set_value_to_etcd': Mock(),
     }
     monkeypatch.setattr(apis.base_app, 'read_from_etcd', etcd_operations['read_from_etcd'])
     monkeypatch.setattr(apis.base_app, 'delete_from_etcd', etcd_operations['delete_from_etcd'])
     monkeypatch.setattr(apis.base_app, 'set_value_to_etcd', etcd_operations['set_value_to_etcd'])
-    monkeypatch.setattr(commons.utils, 'read_from_etcd', etcd_operations['utils_read_from_etcd'])
-    monkeypatch.setattr(commons.utils, 'delete_from_etcd', etcd_operations['utils_delete_from_etcd'])
-    monkeypatch.setattr(commons.utils, 'set_value_to_etcd', etcd_operations['utils_set_value_to_etcd'])
     return etcd_operations
+
+@pytest.fixture
+def system_volumes(monkeypatch):
+    import apis.specs
+    system_volumes = Mock()
+    monkeypatch.setattr(apis.specs, 'get_system_volumes_from_etcd', system_volumes)
+    return system_volumes
 
 @pytest.fixture
 def base_app(etcd_operations, monkeypatch):
