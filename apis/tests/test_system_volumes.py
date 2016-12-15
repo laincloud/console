@@ -1,7 +1,6 @@
 # -*- coding: utf-8
 
 from apis.models import App
-from apis.tests.libs import generate_etcd_app_key_result
 from lain_sdk.yaml.parser import DEFAULT_SYSTEM_VOLUMES
 
 HELLO_META = '''
@@ -63,16 +62,13 @@ def test_Render_system_volumes():
         for container in podg.Pod.Containers:
             assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES
 
-
-# TODO: finish the test case
-# def test_Render_system_volumes_registry(etcd_operations):
-#     etcd_operations['utils_read_from_etcd'].return_value = generate_etcd_app_key_result(REGISTRY_SYSTEM_VOLUME)
-#     registry = App()
-#     registry.appname = 'registry'
-#     registry.meta_version = REGISTRY_META_VERSION
-#     registry.meta = REGISTRY_META
-#     conf = registry.app_spec
-#     for podg in conf.PodGroups:
-#         for container in podg.Pod.Containers:
-#             assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES + [REGISTRY_SYSTEM_VOLUME]
-
+def test_Render_system_volumes_registry(system_volumes):
+    system_volumes.return_value = [REGISTRY_SYSTEM_VOLUME]
+    registry = App()
+    registry.appname = 'registry'
+    registry.meta_version = REGISTRY_META_VERSION
+    registry.meta = REGISTRY_META
+    conf = registry.app_spec
+    for podg in conf.PodGroups:
+        for container in podg.Pod.Containers:
+            assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES + [REGISTRY_SYSTEM_VOLUME]
