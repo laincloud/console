@@ -13,6 +13,7 @@ import hashlib
 from commons.settings import MAIN_DOMAIN
 from commons.utils import read_from_etcd
 from authorize.utils import create_group_for_app, add_group_member, add_group_member_for_admin
+from commons.settings import ETCD_AUTHORITY
 
 requests.packages.urllib3.disable_warnings()
 client_id = ''
@@ -98,7 +99,7 @@ def get_console_apps(access_token):
     appnames = []
     try:
         ETCD_PREFIX = 'lain/console/apps'
-        apps_root_r = read_from_etcd(ETCD_PREFIX)
+        apps_root_r = read_from_etcd(ETCD_PREFIX, ETCD_AUTHORITY)
         for l in apps_root_r.leaves:
             appname = l.key[len(ETCD_PREFIX)+2:]
             appnames.append(appname)
