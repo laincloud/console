@@ -58,6 +58,7 @@ class Config:
     @classmethod
     def generate_config_image(cls, config_list, defined_secret_files, appname, config_tag):
         try:
+            logger.info("ready generate config images %s for app %s" % (config_tag, appname))
             folder = configs.utils.generate_tmp_folder()
             configs.utils.generate_dockerfile(folder, config_list, defined_secret_files)
             configs.utils.generate_config_image(folder, appname, config_tag)

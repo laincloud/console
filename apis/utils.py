@@ -66,6 +66,7 @@ def get_calico_default_rules():
 
 def add_calico_profile_for_app(calico_profile):
     if not docker_network_exists(calico_profile):
+        logger.info("ready creating docker network for profile %s" % calico_profile)
         docker_network_add(calico_profile)
         outbound_rules, inbound_rules = get_calico_default_rules()
         for rule in outbound_rules:
@@ -184,27 +185,13 @@ def docker_network_add(name):
     cli = get_docker_client(DOCKER_BASE_URL)
     ipam_pool =  create_ipam_pool(subnet=CALICO_NETWORK)
     ipam_config = create_ipam_config(driver="calico", pool_configs=[ipam_pool])
-    cli.create_network(name, driver="calico", ipam=ipam_config)
+    result = cli.create_network(name, driver="calico", ipam=ipam_config)
+    logger.info("create docker network for app %s : %s" % (name, result))
 
 
 def docker_network_remove(name):
     cli = get_docker_client(DOCKER_BASE_URL)
     cli.remove_network(name)
-
-
-def _calicoctl_profile(command, profile):
-    cmd = "DOCKER_HOST=%s ETCD_AUTHORITY=%s %s profile %s %s" % (
-        DOCKER_BASE_URL,
-        ETCD_AUTHORITY,
-        CALICOCTL_BIN,
-        command,
-        profile
-    )
-    return_code = subprocess.call(cmd, shell=True)
-    if DEBUG or return_code == 0:
-        return "CALICO PROFILE %s %s : SUCCESS" % (profile, command)
-    else:
-        raise CalicoException("CALICO PROFILE %s %s : FAIL" % (profile, command))
 
 
 def calicoctl_profile_rule_op(profile, op):
@@ -217,9 +204,9 @@ def calicoctl_profile_rule_op(profile, op):
     )
     return_code = subprocess.call(cmd, shell=True)
     if DEBUG or return_code == 0:
-        return "CALICO cmd %s : SUCCESS" % (cmd, )
+        logger.info("calico cmd %s : success" % cmd)
     else:
-        raise CalicoException("CALICO cmd %s : FAIL" % (cmd, ))
+        raise CalicoException("calico cmd %s : fail" % (cmd, ))
 
 
 def get_system_volumes_from_etcd(appname):

@@ -13,6 +13,7 @@ build:
 
 test:
   script:
+    - mkdir /lain/logs/
     - make pylint test
 
 web:
@@ -21,8 +22,9 @@ web:
   memory: 256m
   env:
       - CONSOLE_APISERVER=http://deployd.lain:9003
-  persistent_dirs:
-    - /lain/app/logs
+  logs:
+    - console_log
+    - console_op
 
 notify:
   slack: "#lain"

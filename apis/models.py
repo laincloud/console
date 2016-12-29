@@ -106,7 +106,7 @@ class App(BaseApp):
                         'Status': r.json()
                     }
                 else:
-                    logger.error("Error getting PodGroup: %s" % r.content)
+                    logger.warning("fail getting PodGroup: %s" % r.content)
                     return None
         return None
 
@@ -118,7 +118,7 @@ class App(BaseApp):
                 'Status': r.json()
             }
         else:
-            logger.error("Error getting Dependency: %s" % r.content)
+            logger.warning("fail getting Dependency: %s" % r.content)
             return None
 
     def get_resource_instance_meta(self, client_appname, context):
