@@ -3,8 +3,9 @@ appname: console
 build:
   base: laincloud/centos-lain:20160503
   prepare:
-    version: "20161103"
+    version: "20161215"
     script:
+      - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
       - git clone --depth=1 https://github.com/golang/net.git $GOPATH/src/golang.org/x/net
       - go get github.com/mijia/gobuildweb
@@ -14,8 +15,6 @@ build:
       - cd $GOPATH/src/github.com/laincloud/archon && gobuildweb dist
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
-    keep:
-      - node_modules
   script:
     - cd $GOPATH/src/github.com/laincloud/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/
     - unzip -o /lain/app/archon-0.1.zip
@@ -24,6 +23,7 @@ build:
 
 test:
   script:
+    - mkdir /lain/logs/
     - make pylint test
 
 web:
@@ -39,8 +39,9 @@ web.console:
     - /api
   env:
       - CONSOLE_APISERVER=http://deployd.lain:9003
-  persistent_dirs:
-    - /lain/app/logs
+  logs:
+    - console_log
+    - console_op
 
 notify:
   slack: "#lain"

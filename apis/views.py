@@ -329,6 +329,7 @@ class AppApi:
 
             exist, target_meta_version = app.check_latest_version()
             if not exist:
+                logger.error("app %s found no latest meta and release images" % appname)
                 return (400, None,
                         'not found both meta and release images,\nplease check your App images then try to update your App\n',
                         reverse('api_app', kwargs={'appname': appname}))
@@ -1149,7 +1150,7 @@ class ConfigApi:
         for pg in instance.app_spec.PodGroups:
             pg_name = get_resource_pg_name(resource.appname, pg.Name)
             basic_image = pg.Pod.Containers[0].Image
-            release_image = cls._construct_config(token, resource, pg_name, basic_image)
+            release_image = cls.construct_config(token, resource, pg_name, basic_image)
             pg.Pod.Containers[0].Image = release_image if release_image else basic_image
 
     @classmethod
@@ -1158,11 +1159,11 @@ class ConfigApi:
             return
         for pg in app.app_spec.PodGroups:
             basic_image = pg.Pod.Containers[0].Image
-            release_image = cls._construct_config(token, app, pg.Name, basic_image)
+            release_image = cls.construct_config(token, app, pg.Name, basic_image)
             pg.Pod.Containers[0].Image = release_image if release_image else basic_image
 
     @classmethod
-    def _construct_config(cls, token, app, pg_name, base_image):
+    def construct_config(cls, token, app, pg_name, base_image):
         def get_defined_secret_files(app, pg_name):
             for proc in app.lain_config.procs.values():
                 if "%s.%s.%s" % (app.appname, proc.type.name, proc.name) == pg_name:

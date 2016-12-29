@@ -22,6 +22,7 @@ LVAULT_READ_TIMEOUT = 5
 def get_config_content(access_token, appname, procname):
     url = "%s?app=%s&proc=%s" % (LVAULT_CONFIG_URL, appname, procname)
     headers = {'access-token': access_token}
+    logger.info("access lvaule for config : %s" % url)
     response = requests.get(url, headers=headers,
                             timeout=(LVAULT_CONNECT_TIMEOUT, LVAULT_READ_TIMEOUT))
     return response
