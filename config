@@ -1,4 +1,4 @@
 client_id=40
-client_sec="zCdoUemtLLSoFUiuTRo2bg"
+client_sec=""
 redirect_uri="http://console.lain.cloud/api/v1/authorize/"
 console_api_scheme="http"
