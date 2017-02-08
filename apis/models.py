@@ -499,8 +499,6 @@ def recursive_deploy(podgroup_spec):
     services_dont_allow = []
 
     app = App.get(podgroup_spec.Namespace)
-    app.add_calico_profile()
-
     services = app.lain_config.use_services
     for service_appname, service_procnames in services.iteritems():
         service_app = App.get_or_none(service_appname)
