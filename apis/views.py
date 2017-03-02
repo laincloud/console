@@ -649,6 +649,12 @@ class ProcApi:
 
     @classmethod
     def render_pod_data(cls, pod):
+        if pod['Containers'] is None:
+            raise TypeError("containers is not a list")
+
+        if len(pod['Containers']) < 1:
+            raise ValueError("containers is []")
+
         return {
                'containerid': pod['Containers'][0]['Id'],
                'containername': pod['Containers'][0]['Runtime']['Name'],
@@ -695,12 +701,25 @@ class ProcApi:
                     for client_name, pods_info in pods_meta.iteritems():
                         if client and client != client_name:
                             continue
+                        if pods_info is None:
+                            logger.error("error: pods is null when render_proc_data for portal of %s."
+                                         % client_name)
+                            break
                         for pod in pods_info:
-                            pods.append(ProcApi.render_pod_data(pod))
+                            try:
+                                pods.append(ProcApi.render_pod_data(pod))
+                            except Exception as e:
+                                logger.error("error: %s when render_proc_data for instance %s of %s's portal."
+                                             % (e.message, pod["InstanceNo"], client_name))
                             last_error = pod['LastError']
                 else:
                     for pod in pods_meta:
-                        pods.append(ProcApi.render_pod_data(pod))
+                        try:
+                            pods.append(ProcApi.render_pod_data(pod))
+                        except Exception as e:
+                            logger.error("error: %s when render_proc_data for instance %s of %s."
+                                         % (e.message, pod["InstanceNo"], appname))
+
                     last_error = proc_status['Status']['LastError']
             data['pods'] = pods
             data['depends'] = depends
@@ -1173,7 +1192,7 @@ class ConfigApi:
         if len(defined_secret_files) == 0:
             return None
 
-        config_list= Config.get_configs(token, app.appname, pg_name)
+        config_list = Config.get_configs(token, app.appname, pg_name)
         config_list, timestamp = Config.validate_defined_secret_files(config_list, defined_secret_files)
         config_tag = cls.get_config_image(app, config_list, defined_secret_files, pg_name, timestamp)
 
