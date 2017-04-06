@@ -8,6 +8,7 @@ import jsonpickle
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from .utils import get_system_volumes_from_etcd
 
+
 class AppType:
 
     Normal = 'app'
@@ -180,7 +181,7 @@ class ContainerSpec(ImSpec):
 
     def set_env(self, env_key, env_value):
         for i in self.Env:
-            if re.match("%s\s*="%env_key, i):
+            if re.match("%s\s*=" % env_key, i):
                 self.Env.remove(i)
         self.Env.append("%s=%s" % (env_key, env_value))
 
@@ -189,6 +190,7 @@ class PodSpec(ImSpec):
 
     Containers = []
     Filters = []
+    Labels = {}
     Dependencies = []
     Annotation = ''
     Stateful = False
@@ -203,6 +205,7 @@ class PodSpec(ImSpec):
         s.CreateAt = self.CreateAt
         s.UpdateAt = self.UpdateAt
         s.Containers = [c.clone() for c in self.Containers]
+        s.Labels = copy.deepcopy(self.Labels)
         s.Filters = copy.deepcopy(self.Filters)
         s.Dependencies = [d.clone() for d in self.Dependencies]
         s.Annotation = self.Annotation
@@ -246,7 +249,8 @@ class PodSpec(ImSpec):
             s.Stateful == self.Stateful and \
             s.Filters == self.Filters and \
             s.SetupTime == self.SetupTime and \
-            s.KillTimeout == self.KillTimeout
+            s.KillTimeout == self.KillTimeout and \
+            s.Labels == self.Labels
 
 
 class PodGroupSpec(ImSpec):
@@ -319,9 +323,12 @@ class AppSpec:
 def render_app_spec(lain_config):
     app = AppSpec()
     app.AppName = lain_config.appname
-    app.PodGroups = [render_podgroup_spec(app.AppName, proc, lain_config.use_services, lain_config.use_resources) for proc in lain_config.procs.values() if proc.type != ProcType.portal]
-    app.Portals = [render_pod_spec(app.AppName, proc, lain_config.use_services, lain_config.use_resources) for proc in lain_config.procs.values() if proc.type == ProcType.portal]
+    app.PodGroups = [render_podgroup_spec(app.AppName, proc, lain_config.use_services, lain_config.use_resources)
+                     for proc in lain_config.procs.values() if proc.type != ProcType.portal]
+    app.Portals = [render_pod_spec(app.AppName, proc, lain_config.use_services, lain_config.use_resources)
+                   for proc in lain_config.procs.values() if proc.type == ProcType.portal]
     return app
+
 
 def render_podgroup_spec(app_name, proc, use_services, use_resources):
     pod_group = PodGroupSpec()
@@ -330,9 +337,11 @@ def render_podgroup_spec(app_name, proc, use_services, use_resources):
     )
     pod_group.Namespace = app_name
     pod_group.NumInstances = proc.num_instances
-    pod_group.RestartPolicy = RestartPolicy.Always # TODO allow user definiton
-    pod_group.Pod = render_pod_spec(app_name, proc, use_services, use_resources)
+    pod_group.RestartPolicy = RestartPolicy.Always  # TODO allow user definiton
+    pod_group.Pod = render_pod_spec(
+        app_name, proc, use_services, use_resources)
     return pod_group
+
 
 def render_pod_spec(app_name, proc, use_services, use_resources):
     pod = PodSpec()
@@ -349,12 +358,16 @@ def render_pod_spec(app_name, proc, use_services, use_resources):
         for resource_name, resource_props in use_resources.iteritems():
             resource_service_names = resource_props['services']
             for resouce_service_proc_name in resource_service_names:
-                pod.Dependencies.append(render_dependency(resource_instance_name(resource_name, app_name), resouce_service_proc_name))
+                pod.Dependencies.append(render_dependency(resource_instance_name(
+                    resource_name, app_name), resouce_service_proc_name))
     pod.Annotation = proc.annotation
     pod.Stateful = proc.stateful
     pod.SetupTime = proc.setup_time
     pod.KillTimeout = proc.kill_timeout
+    pod.Labels = {} if not proc.labels else proc.labels
+    pod.Filters = [] if not proc.filters else proc.filters
     return pod
+
 
 def render_container_spec(app_name, proc):
     c = ContainerSpec()
@@ -363,9 +376,11 @@ def render_container_spec(app_name, proc):
     c.set_env("TZ", 'Asia/Shanghai')
     c.User = '' if not hasattr(proc, 'user') else proc.user
     c.WorkingDir = '' if not hasattr(proc, 'working_dir') else proc.working_dir
-    c.DnsSearch = [] if not hasattr(proc, 'dns_search') else copy.deepcopy(proc.dns_search)
+    c.DnsSearch = [] if not hasattr(
+        proc, 'dns_search') else copy.deepcopy(proc.dns_search)
     c.Volumes = copy.deepcopy(proc.volumes)
-    c.SystemVolumes = copy.deepcopy(proc.system_volumes) + get_system_volumes_from_etcd(app_name)
+    c.SystemVolumes = copy.deepcopy(
+        proc.system_volumes) + get_system_volumes_from_etcd(app_name)
     c.CloudVolumes = render_cloud_volumes(proc.cloud_volumes)
     c.Command = proc.cmd
     c.Entrypoint = proc.entrypoint
@@ -375,16 +390,18 @@ def render_container_spec(app_name, proc):
     c.LogConfig = None
     return c
 
+
 def render_dependency(service_app, service):
     from apis.models import App
     d = Dependency()
     d.PodName = "%s.portal.%s" % (
-         service_app,
-         App.get_portal_name_from_service_name(
+        service_app,
+        App.get_portal_name_from_service_name(
             App.get_or_none(service_app), service)
     )
-    d.Policy = DependencyPolicy.NamespaceLevel # TODO allow user definiton
+    d.Policy = DependencyPolicy.NamespaceLevel  # TODO allow user definiton
     return d
+
 
 def render_cloud_volumes(cloud_volumes):
     volumes = []
@@ -395,8 +412,10 @@ def render_cloud_volumes(cloud_volumes):
         volumes.append(cv)
     return volumes
 
+
 def json_of_spec(spec):
     return json.loads(jsonpickle.encode(spec, unpicklable=False))
+
 
 def render_podgroup_spec_from_json(spec_json):
     pod_group = PodGroupSpec()
@@ -407,6 +426,7 @@ def render_podgroup_spec_from_json(spec_json):
     pod_group.Pod = render_pod_spec_from_json(spec_json['Pod'])
     return pod_group
 
+
 def render_pod_spec_from_json(spec_json):
     pod = PodSpec()
     pod.Name = spec_json['Name']
@@ -414,7 +434,8 @@ def render_pod_spec_from_json(spec_json):
     containers = spec_json.get('Containers')
     if not isinstance(containers, list):
         containers = []
-    pod.Containers = [render_container_spec_from_json(pod.Name, c) for c in containers]
+    pod.Containers = [render_container_spec_from_json(
+        pod.Name, c) for c in containers]
     dependencies = spec_json.get('Dependencies')
     if not isinstance(dependencies, list):
         dependencies = []
@@ -430,19 +451,22 @@ def render_pod_spec_from_json(spec_json):
     pod.Filters = copy.deepcopy(filters)
     return pod
 
+
 def render_container_spec_from_json(app_name, spec_json):
     c = ContainerSpec()
     c.Image = spec_json['Image']
     c.Env = copy.deepcopy(spec_json['Env'])
     c.User = spec_json['User']
     c.WorkingDir = spec_json['WorkingDir']
-    c.DnsSearch = copy.deepcopy(spec_json['DnsSearch']) if spec_json.get('DnsSearch') else []
+    c.DnsSearch = copy.deepcopy(
+        spec_json['DnsSearch']) if spec_json.get('DnsSearch') else []
     c.Volumes = copy.deepcopy(spec_json['Volumes'])
     c.SystemVolumes = copy.deepcopy(spec_json['SystemVolumes'])
     cloud_volumes = spec_json.get('CloudVolumes')
     if not isinstance(cloud_volumes, list):
         cloud_volumes = []
-    c.CloudVolumes = [render_cloud_volumes_spec_from_json(cv) for cv in cloud_volumes]
+    c.CloudVolumes = [render_cloud_volumes_spec_from_json(
+        cv) for cv in cloud_volumes]
     command = spec_json.get('Command')
     if not command:
         command = []
@@ -457,14 +481,17 @@ def render_container_spec_from_json(app_name, spec_json):
     json_logconfig = spec_json.get('LogConfig', {})
     c.LogConfig = LogConfigSpec()
     c.LogConfig.Type = json_logconfig.get('Type', '')
-    c.LogConfig.Config = copy.deepcopy(json_logconfig['Config']) if json_logconfig.get('Config') else {}
+    c.LogConfig.Config = copy.deepcopy(
+        json_logconfig['Config']) if json_logconfig.get('Config') else {}
     return c
+
 
 def render_dependency_from_json(spec_json):
     d = Dependency()
     d.PodName = spec_json['PodName']
     d.Policy = spec_json['Policy']
     return d
+
 
 def render_cloud_volumes_spec_from_json(spec_json):
     cv = CloudVolumeSpec()
