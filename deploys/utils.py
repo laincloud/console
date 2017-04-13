@@ -35,6 +35,12 @@ def patch_podgroup_spec(podgroup_json, apiserver):
     url = "%s/api/podgroups?name=%s&cmd=spec" % (apiserver, podgroup_name)
     return send_request("PATCH", url, pod_json, None)
 
+# 检测端口是否被占用
+def post_valiad_ports(ports, apiserver):
+    url = "%s/api/ports?cmd=validate" % (apiserver)
+    headers = {"Content-Type":"application/json"}
+    return send_request("POST", url, ports, headers)
+
 def create_dependency(dependency_pod_json, apiserver):
     url = "%s/api/depends" % (apiserver, )
     return send_request("POST", url, dependency_pod_json, None)
