@@ -4,6 +4,7 @@ import deploys.utils
 
 DEPLOYD_WORKING_STATUS = 'started'
 
+
 class Deploy:
     name = ''
     apiserver = ''

@@ -23,10 +23,11 @@ def permission_required(permission=None):
 
             if need_auth:
                 access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
-                valid, username, available_groups = AuthApi.verify_token(access_token)
+                valid, username, available_groups = AuthApi.verify_token(
+                    access_token)
                 if not valid:
-                    return render_json_response(401, 'app', None, 
-                        "unauthorized : don't have the access to the operation", reverse('api_docs'))
+                    return render_json_response(401, 'app', None,
+                                                "unauthorized : don't have the access to the operation", reverse('api_docs'))
                 else:
                     AuthApi.operater = username
                     request.META['LAIN_AUTH_TYPE'] = AUTH_TYPES['SSO']
@@ -39,10 +40,10 @@ def permission_required(permission=None):
                 appname = args[0]
                 if not AppApi.check_app_exist(appname):
                     return render_json_response(404, 'app', None,
-                        'app with appname %s not exist, has not been reposited yet' % appname, reverse('api_repos'))
+                                                'app with appname %s not exist, has not been reposited yet' % appname, reverse('api_repos'))
                 if need_auth and not AuthApi.verify_app_access(available_groups, appname):
-                    return render_json_response(403, 'maintainer', None, 
-                        "forbidden : don't have the access to app %s" % appname, reverse('api_docs'))
+                    return render_json_response(403, 'maintainer', None,
+                                                "forbidden : don't have the access to app %s" % appname, reverse('api_docs'))
 
             return fun(request, *args, **kwargs)
         return wraps(fun)(_decorator)
@@ -53,7 +54,7 @@ def deployd_required(fun):
     def _check_deployd_status(request, *args, **kwargs):
         if not is_deployable():
             return render_json_response(503, 'app', None,
-                'deployd is now in maintain state, please wait for a while', reverse('api_apps'))
+                                        'deployd is now in maintain state, please wait for a while', reverse('api_apps'))
         return fun(request, *args, **kwargs)
     return wraps(fun)(_check_deployd_status)
 
@@ -124,7 +125,8 @@ def api_apps(request):
 @deployd_required
 def api_apps_post(request, appname, options):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
-    status_code, view_object, msg, url = AppApi.create_app(access_token, appname, options)
+    status_code, view_object, msg, url = AppApi.create_app(
+        access_token, appname, options)
     return render_json_response(status_code, 'app', view_object, msg, url)
 
 
@@ -133,7 +135,8 @@ def api_apps_get(request):
     groups = request.META.get('SSO_GROUPS', [])
     open_auth = request.META.get('LAIN_AUTH_TYPE') != None
     options = request.GET
-    status_code, view_object, msg, url = AppApi.list_apps(open_auth, groups, options)
+    status_code, view_object, msg, url = AppApi.list_apps(
+        open_auth, groups, options)
     return render_json_response(status_code, 'apps', view_object, msg, url)
 
 
@@ -158,7 +161,8 @@ def api_app_high_permit(request, appname):
         except Exception:
             options = {}
         access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
-        status_code, view_object, msg, url = AppApi.update_app(access_token, appname, options)
+        status_code, view_object, msg, url = AppApi.update_app(
+            access_token, appname, options)
         return render_json_response(status_code, 'app', view_object, msg, url)
 
 
@@ -185,7 +189,8 @@ def api_procs_post(request, appname):
         procname = options['procname']
     except Exception:
         return render_json_response(400, 'proc', None, 'invalid request: should be json body with procname(string)', reverse('api_docs'))
-    status_code, view_object, msg, url = ProcApi.create_app_proc(appname, procname, options)
+    status_code, view_object, msg, url = ProcApi.create_app_proc(
+        appname, procname, options)
     return render_json_response(status_code, 'proc', view_object, msg, url)
 
 
@@ -208,20 +213,23 @@ def api_proc(request, appname, procname):
 @deployd_required
 def api_proc_high_permit(request, appname, procname):
     if request.method == 'DELETE':
-        status_code, view_object, msg, url = ProcApi.delete_app_proc(appname, procname)
+        status_code, view_object, msg, url = ProcApi.delete_app_proc(
+            appname, procname)
         return render_json_response(status_code, 'proc', view_object, msg, url)
     elif request.method == 'PATCH':
         try:
             options = json.loads(request.body)
         except Exception:
             return render_json_response(400, 'proc', None, 'invalid request: should be json body with num_instances(integer) or cpu(integer) or memory(str)', reverse('api_docs'))
-        status_code, view_object, msg, url = ProcApi.update_app_proc(appname, procname, options)
+        status_code, view_object, msg, url = ProcApi.update_app_proc(
+            appname, procname, options)
         return render_json_response(status_code, 'proc', view_object, msg, url)
 
 
 @permission_required('maintain')
 def api_proc_get(request, appname, procname):
-    status_code, view_object, msg, url = ProcApi.get_app_proc(appname, procname)
+    status_code, view_object, msg, url = ProcApi.get_app_proc(
+        appname, procname)
     return render_json_response(status_code, 'proc', view_object, msg, url)
 
 
@@ -242,7 +250,8 @@ def api_repos_post(request):
     except Exception:
         return render_json_response(400, 'repo', None, 'invalid request: should be json body with appname(string)', reverse('api_docs'))
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
-    status_code, view_object, msg, url = AppApi.create_repo(access_token, appname, options)
+    status_code, view_object, msg, url = AppApi.create_repo(
+        access_token, appname, options)
     return render_json_response(status_code, 'repos', view_object, msg, url)
 
 
@@ -259,6 +268,7 @@ def api_repo(request, appname):
         return _invalid_request_method('repo', request.method)
     else:
         return api_repo_get(request, appname)
+
 
 @permission_required('maintain')
 def api_repo_get(request, appname):
@@ -282,10 +292,12 @@ def api_maintainers_high_permit(request, appname):
             role = options['role']
         except Exception:
             return render_json_response(400, 'maintainers', None, 'invalid request: should be json body with username(string) and role(string)', reverse('api_docs'))
-        status_code, view_object, msg, url = MaintainApi.add_maintainer(access_token, appname, username, role)
+        status_code, view_object, msg, url = MaintainApi.add_maintainer(
+            access_token, appname, username, role)
         return render_json_response(status_code, 'maintainer', view_object, msg, url)
     elif request.method == 'GET':
-        status_code, view_object, msg, url = MaintainApi.get_maintainers(access_token, appname)
+        status_code, view_object, msg, url = MaintainApi.get_maintainers(
+            access_token, appname)
         return render_json_response(status_code, 'maintainers', view_object, msg, url)
     else:
         return _invalid_request_method('maintainer', request.method)
@@ -301,10 +313,12 @@ def api_maintainer(request, appname, username):
 def api_maintainer_high_permit(request, appname, username):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
     if request.method == 'GET':
-        status_code, view_object, msg, url = MaintainApi.get_maintainer(access_token, appname, username)
+        status_code, view_object, msg, url = MaintainApi.get_maintainer(
+            access_token, appname, username)
         return render_json_response(status_code, 'maintainer', view_object, msg, url)
     elif request.method == 'DELETE':
-        status_code, view_object, msg, url = MaintainApi.delete_maintainer(access_token, appname, username)
+        status_code, view_object, msg, url = MaintainApi.delete_maintainer(
+            access_token, appname, username)
         return render_json_response(status_code, 'maintainer', view_object, msg, url)
     else:
         return _invalid_request_method('maintainer', request.method)
@@ -319,7 +333,8 @@ def api_instances(request, resourcename):
 
 @permission_required('maintain')
 def api_instances_get(request, resourcename):
-    status_code, view_object, msg, url = ResourceApi.list_resource_instances(resourcename)
+    status_code, view_object, msg, url = ResourceApi.list_resource_instances(
+        resourcename)
     return render_json_response(status_code, 'instances', view_object, msg, url)
 
 
@@ -333,13 +348,15 @@ def api_roles(request, appname):
 @permission_required('maintain')
 def api_roles_get(request, appname):
     access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
-    status_code, view_object, msg, url = MaintainApi.get_role(appname, access_token=access_token)
+    status_code, view_object, msg, url = MaintainApi.get_role(
+        appname, access_token=access_token)
     return render_json_response(status_code, 'role', view_object, msg, url)
 
 
 def api_role(request, appname, username):
     if request.method == 'GET':
-        status_code, view_object, msg, url = MaintainApi.get_role(appname, username=username)
+        status_code, view_object, msg, url = MaintainApi.get_role(
+            appname, username=username)
         return render_json_response(status_code, 'role', view_object, msg, url)
     else:
         return _invalid_request_method('role', request.method)

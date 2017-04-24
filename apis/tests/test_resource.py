@@ -58,6 +58,7 @@ service.redis:
 
 REDIS_RESOURCE_META_VERSION = '1439365340-06e92b4456116ad5e6875c8c34797d22156d44a5'
 
+
 def test_Resource_instance_meta_render():
     hello = App()
     hello.appname = 'hello'
@@ -68,19 +69,22 @@ def test_Resource_instance_meta_render():
     redis_resource = App()
     redis_resource.appname = 'redis'
     redis_resource.meta_version = REDIS_RESOURCE_META_VERSION
-    
+
     meta_from_file = yaml.safe_load(REDIS_RESOURCE_META)
-    meta_yaml = yaml.safe_dump(meta_from_file, default_style= '"')
+    meta_yaml = yaml.safe_dump(meta_from_file, default_style='"')
     redis_resource.meta = meta_yaml
     redis_instance = App()
     redis_instance.meta_version = REDIS_RESOURCE_META_VERSION
     redis_instance.meta = redis_resource.get_resource_instance_meta(
         'hello', hello_config.use_resources['redis']['context'])
     redis_instance.default_image = \
-        "{}/redis:release-{}".format(PRIVATE_REGISTRY, REDIS_RESOURCE_META_VERSION)
+        "{}/redis:release-{}".format(PRIVATE_REGISTRY,
+                                     REDIS_RESOURCE_META_VERSION)
     redis_instance_config = redis_instance.lain_config
     assert redis_instance_config.appname == 'resource.redis.hello'
-    assert redis_instance_config.procs['redis'].image == redis_instance.default_image
+    assert redis_instance_config.procs[
+        'redis'].image == redis_instance.default_image
     assert redis_instance_config.procs['redis'].memory == '128M'
     assert redis_instance_config.procs['redis'].num_instances == 1
-    assert redis_instance_config.procs['portal-redis'].image == redis_instance.default_image
+    assert redis_instance_config.procs[
+        'portal-redis'].image == redis_instance.default_image

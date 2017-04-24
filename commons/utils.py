@@ -5,6 +5,7 @@ import etcd
 from retrying import retry
 from etcd import EtcdException, EtcdKeyNotFound
 
+
 def get_etcd_client(etcd_authority):
     etcd_host_and_port = etcd_authority.split(":")
     if len(etcd_host_and_port) == 2:
@@ -55,7 +56,7 @@ def get_system_volumes(key, etcd_authority):
     try:
         system_volumes_r = read_from_etcd(key, etcd_authority)
         for l in system_volumes_r.leaves:
-            appname = l.key[len(key)+1:]
+            appname = l.key[len(key) + 1:]
             v = get_etcd_value(l.key, etcd_authority, default="")
             sys_vol = [] if v == "" else v.split(";")
             system_volumes[appname] = sys_vol

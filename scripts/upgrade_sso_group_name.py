@@ -101,7 +101,7 @@ def get_console_apps(access_token):
         ETCD_PREFIX = 'lain/console/apps'
         apps_root_r = read_from_etcd(ETCD_PREFIX, ETCD_AUTHORITY)
         for l in apps_root_r.leaves:
-            appname = l.key[len(ETCD_PREFIX)+2:]
+            appname = l.key[len(ETCD_PREFIX) + 2:]
             appnames.append(appname)
         return appnames
     except Exception as e:

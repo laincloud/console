@@ -40,6 +40,7 @@ def add_login_option(parser):
                       help="The sso_url need to be process "
                            "[default: http://sso.lain.local]")
 
+
 def add_former_domain_option(parser):
     parser.add_option('--former_domain', default='lain.local',
                       help="The former main domain of lain "
@@ -106,7 +107,7 @@ def get_console_apps(access_token):
         ETCD_PREFIX = 'lain/console/apps'
         apps_root_r = read_from_etcd(ETCD_PREFIX, ETCD_AUTHORITY)
         for l in apps_root_r.leaves:
-            appname = l.key[len(ETCD_PREFIX)+2:]
+            appname = l.key[len(ETCD_PREFIX) + 2:]
             appnames.append(appname)
         return appnames
     except Exception as e:
@@ -116,7 +117,7 @@ def get_console_apps(access_token):
 
 def get_former_groupname(appname, former_lain_domain):
     appname_prefix = "lainapp-%s" % former_lain_domain
-    return (appname_prefix + "-" + appname).replace('.', '-') 
+    return (appname_prefix + "-" + appname).replace('.', '-')
 
 
 def get_former_group_maintainers(group_name, access_token):

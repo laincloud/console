@@ -52,6 +52,7 @@ REGISTRY_META_VERSION = '1439365340-06e92b4456116ad5e6875c8c34797d22156d44a5'
 
 REGISTRY_SYSTEM_VOLUME = "/var/lib/registry:/var/lib/registry"
 
+
 def test_Render_system_volumes():
     hello = App()
     hello.appname = 'hello'
@@ -62,6 +63,7 @@ def test_Render_system_volumes():
         for container in podg.Pod.Containers:
             assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES
 
+
 def test_Render_system_volumes_registry(system_volumes):
     system_volumes.return_value = [REGISTRY_SYSTEM_VOLUME]
     registry = App()
@@ -71,4 +73,5 @@ def test_Render_system_volumes_registry(system_volumes):
     conf = registry.app_spec
     for podg in conf.PodGroups:
         for container in podg.Pod.Containers:
-            assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES + [REGISTRY_SYSTEM_VOLUME]
+            assert container.SystemVolumes == DEFAULT_SYSTEM_VOLUMES + \
+                [REGISTRY_SYSTEM_VOLUME]

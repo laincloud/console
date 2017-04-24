@@ -95,14 +95,14 @@ WSGI_APPLICATION = 'console.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': environ.get("CONSOLE_DB_NAME", "lainconsole"),
-#        'USER': environ.get("CONSOLE_DB_USER", "lainconsole"),
-#        'PASSWORD': environ.get("CONSOLE_DB_PASSWORD", "lainconsole"),
-#        'HOST': environ.get("CONSOLE_DB_HOST", "127.0.0.1"),
-#        'PORT': int(environ.get("CONSOLE_DB_PORT", 3306),)
-#    }
+    #    'default': {
+    #        'ENGINE': 'django.db.backends.mysql',
+    #        'NAME': environ.get("CONSOLE_DB_NAME", "lainconsole"),
+    #        'USER': environ.get("CONSOLE_DB_USER", "lainconsole"),
+    #        'PASSWORD': environ.get("CONSOLE_DB_PASSWORD", "lainconsole"),
+    #        'HOST': environ.get("CONSOLE_DB_HOST", "127.0.0.1"),
+    #        'PORT': int(environ.get("CONSOLE_DB_PORT", 3306),)
+    #    }
 }
 
 
