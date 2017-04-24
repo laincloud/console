@@ -196,6 +196,7 @@ class PodSpec(ImSpec):
     Stateful = False
     SetupTime = 0
     KillTimeout = 10
+    HealthConfig = {}
 
     def clone(self):
         s = PodSpec()
@@ -207,6 +208,7 @@ class PodSpec(ImSpec):
         s.Containers = [c.clone() for c in self.Containers]
         s.Labels = copy.deepcopy(self.Labels)
         s.Filters = copy.deepcopy(self.Filters)
+        s.HealthConfig = copy.deepcopy(self.HealthConfig)
         s.Dependencies = [d.clone() for d in self.Dependencies]
         s.Annotation = self.Annotation
         s.Stateful = self.Stateful
@@ -250,7 +252,8 @@ class PodSpec(ImSpec):
             s.Filters == self.Filters and \
             s.SetupTime == self.SetupTime and \
             s.KillTimeout == self.KillTimeout and \
-            s.Labels == self.Labels
+            s.Labels == self.Labels and \
+            s.HealthConfig == self.HealthConfig
 
 
 class PodGroupSpec(ImSpec):
@@ -366,6 +369,7 @@ def render_pod_spec(app_name, proc, use_services, use_resources):
     pod.KillTimeout = proc.kill_timeout
     pod.Labels = {} if not proc.labels else proc.labels
     pod.Filters = [] if not proc.filters else proc.filters
+    pod.HealthConfig = {} if not proc.container_healthcheck else proc.container_healthcheck
     return pod
 
 
