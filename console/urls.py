@@ -46,6 +46,8 @@ urlpatterns = [
     url(r'^(?:api/)?v1/resources/(?P<resourcename>[^/]+)/instances/$',
         'console.views.api_instances', name='api_instances'),
 
+    url(r'^(?:api/)?v1/usedstreamrouterports', 'console.views.api_streamrouter', name='api_streamrouter'),
+
 ]
 
 urlpatterns += static('/v1/docs/', document_root=settings.SWAGGER_UI_ROOT)

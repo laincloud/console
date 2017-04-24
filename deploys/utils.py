@@ -71,3 +71,7 @@ def remove_dependency(dependency_pod_name, apiserver):
 def update_dependency(dependency_pod_json, apiserver):
     url = "%s/api/depends" % apiserver
     return send_request("PUT", url, dependency_pod_json, None)
+
+def get_streamrouter_ports(apiserver):
+    url = "%s/api/ports" % apiserver
+    return send_request("GET", url, None, None)

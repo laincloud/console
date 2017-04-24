@@ -328,7 +328,7 @@ class App(BaseApp):
         remove_missed_results = {}
 
         current_pgs = ["%s.%s.%s" % (self.appname, p.type.name, p.name)
-                       for p in self.lain_config.procs.values()]
+                            for p in self.lain_config.procs.values()]
         try:
             for proc in origin_procs:
                 pg_name = "%s.%s.%s" % (
@@ -348,7 +348,7 @@ class App(BaseApp):
                     remove_failed_results[pg_name] = remove_r
         except Exception, e:
             logger.warning("failed when trying to remove useless proc of app %s: %s" %
-                           (self.appname, str(e)))
+                (self.appname, str(e)))
         remove_results = {
             'OK': len(remove_failed_results) == 0,
             'remove_success_results': remove_success_results,
@@ -618,3 +618,19 @@ class Resource():
             if app.appname.startswith(prefix) and app.is_reachable():
                 resource_instances.append(app)
         return resource_instances
+
+
+class Streamrouter():
+
+    @classmethod
+    def default_deploy(cls):
+        return default_deploy
+
+    @classmethod
+    def get_streamrouter_ports(cls):
+        r = cls.default_deploy().get_streamrouter_ports()
+        if r.status_code < 400:
+            return r.json()
+        else:
+            logger.error("fail to get ports of streamrouter")
+            return None

@@ -3,7 +3,7 @@
 import copy
 import humanfriendly
 from threading import Thread
-from .models import App, Resource, recursive_deploy, default_deploy
+from .models import App, Resource, Streamrouter, recursive_deploy, default_deploy
 from .specs import render_podgroup_spec_from_json, AppType
 from authorize.models import Authorize, Group
 from configs.models import Config
@@ -1320,3 +1320,13 @@ class ConfigApi:
             Config.overlap_config_image(
                 app.appname, config_tag, config_layer_count, target_repo, target_tag)
         return "%s:%s-%s" % (target_repo, target_tag, config_tag)
+
+class StreamrouterApi:
+
+    @classmethod
+    def list_ports(cls):
+        resp = Streamrouter.get_streamrouter_ports()
+        if resp == None:
+            return (400, None, '', reverse('api_streamrouter'))
+        else:
+            return (200, resp, '', reverse('api_streamrouter'))

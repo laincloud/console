@@ -52,5 +52,8 @@ class Deploy:
     def update_dependency(self, dependency_pod_json):
         return deploys.utils.update_dependency(dependency_pod_json, self.apiserver)
 
+    def get_streamrouter_ports(self):
+        return deploys.utils.get_streamrouter_ports(self.apiserver)
+
     def __unicode__(self):
         return "<%s:%s>" % (self.name, self.apiserver)

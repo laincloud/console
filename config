@@ -1,4 +1,5 @@
-client_id=40
+client_id=45
 client_sec=""
 redirect_uri="http://console.lain.cloud/api/v1/authorize/"
 console_api_scheme="http"
+sso_server="https://sso.lain.com"

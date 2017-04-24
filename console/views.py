@@ -4,7 +4,7 @@ import json
 from django.shortcuts import render_to_response
 from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
-from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi
+from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, StreamrouterApi
 from apis.views import is_deployable
 from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
@@ -377,3 +377,16 @@ def api_version_get(request, appname):
 
 def _invalid_request_method(object_type, method):
     return render_json_response(405, object_type, None, 'invalid http method %s' % method, reverse('api_docs'))
+
+
+def api_streamrouter(request):
+    if request.method != 'GET':
+        return _invalid_request_method('streamrouter', request.method)
+    else:
+        return api_streamrouter_get(request)
+
+
+def api_streamrouter_get(request):
+    status_code, view_object, msg, url = StreamrouterApi.list_ports()
+    return render_json_response(status_code, 'streamrouter', view_object, msg, url)
+
