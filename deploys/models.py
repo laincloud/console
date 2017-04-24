@@ -36,6 +36,9 @@ class Deploy:
     def patch_podgroup_spec(self, podgroup_json):
         return deploys.utils.patch_podgroup_spec(podgroup_json, self.apiserver)
 
+    def post_valiad_ports(self, ports):
+        return deploys.utils.post_valiad_ports(ports, self.apiserver)
+
     def create_dependency(self, dependency_pod_json):
         return deploys.utils.create_dependency(dependency_pod_json, self.apiserver)
 
