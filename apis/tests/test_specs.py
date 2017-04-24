@@ -5,7 +5,6 @@ from apis.specs import (ImSpec, Dependency, LogConfigSpec, ContainerSpec,
                         PodSpec, PodGroupSpec, AppSpec)
 
 
-
 def test_ImSpec_smoke():
     s = ImSpec()
     assert s.CreateAt is None
@@ -16,6 +15,7 @@ def test_Dependency_smoke():
     d = Dependency()
     assert d.PodName == ""
     assert d.Policy == DependencyPolicy.NamespaceLevel
+
 
 def test_Dependency_util_smoke():
     d1 = Dependency()
@@ -30,6 +30,7 @@ def test_LogConfigSpec_smoke():
     l = LogConfigSpec()
     assert l.Type == ''
     assert l.Config == {}
+
 
 def test_LogConfigSpec_verify_params_smoke():
     l = LogConfigSpec()
@@ -50,6 +51,7 @@ def test_ContainerSpec_smoke():
     assert s.Command == []
     assert s.LogConfig is None
 
+
 def test_ContainerSpec_verify_params_smoke():
     s = ContainerSpec()
     assert not s.verify_params()
@@ -57,6 +59,7 @@ def test_ContainerSpec_verify_params_smoke():
     assert s.verify_params()
     s.LogConfig = LogConfigSpec()
     assert s.verify_params()
+
 
 def test_ContainerSpec_util_smoke():
     s1 = ContainerSpec()
@@ -76,6 +79,7 @@ def test_PodSpec_smoke():
     assert s.Name == ""
     assert s.Annotation == ""
 
+
 def test_PodSpec_util_smoke():
     s1 = PodSpec()
     s1.Containers = [ContainerSpec()]
@@ -87,6 +91,7 @@ def test_PodSpec_util_smoke():
     assert s1.Containers[0].equals(s2.Containers[0])
     assert s1.Dependencies[0] != s2.Dependencies[0]
     assert s1.Dependencies[0].equals(s2.Dependencies[0])
+
 
 def test_PodSpec_verify_params_smoke():
     c = ContainerSpec()
@@ -111,6 +116,7 @@ def test_PodGroupSpec_smoke():
     assert s.NumInstances == 0
     assert s.RestartPolicy == RestartPolicy.Never
 
+
 def test_PodGroupSpec_util_smoke():
     c = ContainerSpec()
     d = Dependency()
@@ -132,6 +138,7 @@ def test_PodGroupSpec_util_smoke():
     assert p1.Containers[0].equals(p2.Containers[0])
     assert p1.Dependencies[0] != p2.Dependencies[0]
     assert p1.Dependencies[0].equals(p2.Dependencies[0])
+
 
 def test_PodGroupSpec_verify_params_smoke():
     c = ContainerSpec()
@@ -164,6 +171,7 @@ def test_AppSpec_smoke():
     a.PodGroups = [pg]
     assert a.AppName == ""
 
+
 def test_AppSpec_util_smoke():
     c = ContainerSpec()
     d = Dependency()
@@ -184,6 +192,7 @@ def test_AppSpec_util_smoke():
     pg2 = a2.PodGroups[0]
     assert pg1 != pg2
     assert pg1.equals(pg2)
+
 
 def test_AppSpec_verify_params_smoke():
     c = ContainerSpec()

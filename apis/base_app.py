@@ -28,9 +28,9 @@ from log import logger
 
 
 APP_RUNNING_STATE = {
-    'REPO' : 'reposited',
-    'DEPLOYING' : 'deploying',
-    'DEPLOY' : 'deployed'
+    'REPO': 'reposited',
+    'DEPLOYING': 'deploying',
+    'DEPLOY': 'deployed'
 }
 
 
@@ -113,7 +113,7 @@ class BaseApp:
             return []
         apps = []
         for l in apps_root_r.leaves:
-            appname = l.key[len(cls.ETCD_PREFIX)+1:]  # FIXME: ugly
+            appname = l.key[len(cls.ETCD_PREFIX) + 1:]  # FIXME: ugly
             try:
                 app = cls.get(appname)
                 apps.append(app)
@@ -164,7 +164,8 @@ class BaseApp:
         if self.meta == '' or self.meta_version == '':
             return None
         config = LainConf()
-        config.load(self.meta, self.meta_version, self.default_image, registry=PRIVATE_REGISTRY, domains=get_domains())
+        config.load(self.meta, self.meta_version, self.default_image,
+                    registry=PRIVATE_REGISTRY, domains=get_domains())
         return config
 
     @property
@@ -196,7 +197,8 @@ class BaseApp:
         return self._latest_meta_version
 
     def availabe_meta_versions(self):
-        logger.debug("try to get available meta version of app %s" % self.appname)
+        logger.debug("try to get available meta version of app %s" %
+                     self.appname)
         tags = self.registry_tags
         versions = {}
         for k in tags:
@@ -204,8 +206,10 @@ class BaseApp:
             if meta_version:
                 _timestamp = float(meta_version.split('-')[0])
                 versions[_timestamp] = meta_version
-        ordered_versions = collections.OrderedDict(sorted(versions.items(), reverse=True))
-        logger.debug("finish getting available meta version of app %s" % self.appname)
+        ordered_versions = collections.OrderedDict(
+            sorted(versions.items(), reverse=True))
+        logger.debug(
+            "finish getting available meta version of app %s" % self.appname)
         return ordered_versions.values()
 
     @property
@@ -215,7 +219,8 @@ class BaseApp:
         return self._registry_tags
 
     def docker_image_tags(self):
-        images = search_images_from_registry(app=self._get_registry_search_name())
+        images = search_images_from_registry(
+            app=self._get_registry_search_name())
         return images.get('tags', [])
 
     def _get_registry_search_name(self):
@@ -243,7 +248,7 @@ class BaseApp:
     def _load_apptype_from_meta(self):
         try:
             if self.meta == '' or self.meta_version == '':
-                    return 'unknown'
+                return 'unknown'
             y = yaml.safe_load(self.meta)
             return y.get('apptype', AppType.Normal)
         except:
@@ -282,22 +287,24 @@ class BaseApp:
         meta = self.fetch_meta(meta_version)
         if not isinstance(meta, dict):
             return None
-        self.meta = yaml.safe_dump(meta, default_style= '"')
+        self.meta = yaml.safe_dump(meta, default_style='"')
         self.meta_version = meta_version
         if self.appname != meta['appname']:
-            raise InvalidLainYaml("appname dont match: %s"%meta)
+            raise InvalidLainYaml("appname dont match: %s" % meta)
         self.save()
         return 'meta updated'
 
-    def update_meta(self, meta_version, meta=None, force=False, 
+    def update_meta(self, meta_version, meta=None, force=False,
                     update_lain_config=True, update_spec=True):
         if meta is not None:
-            logger.debug("meta of app `%s` was specified to `%s`" % (self.appname, meta))
+            logger.debug("meta of app `%s` was specified to `%s`" %
+                         (self.appname, meta))
             self.meta = meta
             self.save()
             result = "meta specified"
         else:
-            logger.debug("try to update meta of app `%s` to meta version `%s`" % (self.appname, meta_version))
+            logger.debug("try to update meta of app `%s` to meta version `%s`" % (
+                self.appname, meta_version))
             result = self.base_update_meta(meta_version, force)
         if update_lain_config:
             self.lain_config = self._get_lain_config()

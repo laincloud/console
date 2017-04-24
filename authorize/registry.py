@@ -93,7 +93,8 @@ def ip_in_whitelist(ip):
             return True
         return IPAddress(ip) in IPNetwork(NODE_NETWORK)
     except Exception, e:
-        logger.error("Exception parse registry whitelist for ip %s : %s" % (ip, str(e)))
+        logger.error(
+            "Exception parse registry whitelist for ip %s : %s" % (ip, str(e)))
         return False
 
 

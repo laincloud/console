@@ -37,7 +37,8 @@ class Config:
                     appname, procname))
             secret_files = response.json()
             for s in secret_files:
-                config_list.append(Secret(s['path'], s['content'], s['timestamp'], s['mode']))
+                config_list.append(
+                    Secret(s['path'], s['content'], s['timestamp'], s['mode']))
             return config_list
         except Exception, e:
             cls.handle_error("Exception get configs from lvault for proc %s : %s" % (
@@ -48,19 +49,22 @@ class Config:
         success, config_list = configs.utils.validate_defined_secret_files(
             config_list, defined_secret_files)
         if not success:
-            cls.handle_error("some defined secret files not exist in lvault, please check")
+            cls.handle_error(
+                "some defined secret files not exist in lvault, please check")
         latest_timestamp = 0
         for config in config_list:
             latest_timestamp = config.timestamp if config.timestamp > latest_timestamp \
-                    else latest_timestamp
+                else latest_timestamp
         return config_list, latest_timestamp
 
     @classmethod
     def generate_config_image(cls, config_list, defined_secret_files, appname, config_tag):
         try:
-            logger.info("ready generate config images %s for app %s" % (config_tag, appname))
+            logger.info("ready generate config images %s for app %s" %
+                        (config_tag, appname))
             folder = configs.utils.generate_tmp_folder()
-            configs.utils.generate_dockerfile(folder, config_list, defined_secret_files)
+            configs.utils.generate_dockerfile(
+                folder, config_list, defined_secret_files)
             configs.utils.generate_config_image(folder, appname, config_tag)
             configs.utils.push_config_image(appname, config_tag)
         except Exception, e:

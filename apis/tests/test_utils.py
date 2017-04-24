@@ -14,4 +14,3 @@ def test_get_meta_version_from_tag():
     assert get_meta_version_from_tag('123-abc') is None
     assert get_meta_version_from_tag('fake-123-abc') is None
     assert get_meta_version_from_tag('fake-123--abc') is None
-

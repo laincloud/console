@@ -14,9 +14,9 @@ from cStringIO import StringIO
 from commons.miscs import NoAvailableImages
 import commons.utils
 from commons.settings import (PRIVATE_REGISTRY, DOCKER_BASE_URL, DEBUG,
-                       ETCD_AUTHORITY, CALICOCTL_BIN, CALICO_NETWORK,
-                       SYSTEM_VOLUMES, CALICO_RULE_KEY, 
-                       DOMAIN, EXTRA_DOMAINS)
+                              ETCD_AUTHORITY, CALICOCTL_BIN, CALICO_NETWORK,
+                              SYSTEM_VOLUMES, CALICO_RULE_KEY,
+                              DOMAIN, EXTRA_DOMAINS)
 from log import logger
 
 
@@ -53,7 +53,8 @@ def get_calico_default_rules():
     inbound_rules, outbound_rules = [], []
     try:
         etcd_result = read_from_etcd(CALICO_RULE_KEY)
-        calico_rules = json.loads(etcd_result.value)  # pylint: disable=no-member
+        calico_rules = json.loads(
+            etcd_result.value)  # pylint: disable=no-member
         for rule in calico_rules["outbound"]:
             outbound_rules.append(rule)
         for rule in calico_rules["inbound"]:
@@ -66,7 +67,8 @@ def get_calico_default_rules():
 
 def add_calico_profile_for_app(calico_profile):
     if not docker_network_exists(calico_profile):
-        logger.info("ready creating docker network for profile %s" % calico_profile)
+        logger.info("ready creating docker network for profile %s" %
+                    calico_profile)
         docker_network_add(calico_profile)
         outbound_rules, inbound_rules = get_calico_default_rules()
         for rule in outbound_rules:
@@ -105,7 +107,7 @@ def _is_registry_auth_open(registry=None):
 def _get_registry_access_header(app, registry):
     if _is_registry_auth_open(registry):
         from authorize.models import Authorize
-        
+
         jwt = Authorize.get_jwt_with_appname(app)
         header = {'Authorization': 'Bearer %s' % jwt}
     else:
@@ -127,7 +129,8 @@ def search_images_from_registry(app, registry=None):
 
 
 def get_meta_from_registry(app, meta_version, registry=None):
-    logger.debug("ready get meta version %s for app %s from registry" % (meta_version, app))
+    logger.debug("ready get meta version %s for app %s from registry" %
+                 (meta_version, app))
     meta_version = normalize_meta_version(meta_version)
     if not registry:
         registry = PRIVATE_REGISTRY
@@ -151,7 +154,8 @@ def get_meta_from_registry(app, meta_version, registry=None):
         y = yaml.safe_load(f.read())
     except Exception, e:
         logger.error("fail get yaml from %s %s: %s" % (app, meta_version, e))
-        raise Exception("fail get yaml from %s %s: %s" % (app, meta_version, e))
+        raise Exception("fail get yaml from %s %s: %s" %
+                        (app, meta_version, e))
     finally:
         if cli and isinstance(c, dict) and c.get('Id'):
             cli.remove_container(container=c.get('Id'), v=True)
@@ -162,7 +166,8 @@ def shell(cmd):
     retcode = 0
     output = None
     try:
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        output = subprocess.check_output(
+            cmd, stderr=subprocess.STDOUT, shell=True)
     except:
         retcode = 1
     finally:
@@ -183,7 +188,7 @@ def docker_network_exists(name):
 
 def docker_network_add(name):
     cli = get_docker_client(DOCKER_BASE_URL)
-    ipam_pool =  create_ipam_pool(subnet=CALICO_NETWORK)
+    ipam_pool = create_ipam_pool(subnet=CALICO_NETWORK)
     ipam_config = create_ipam_config(driver="calico", pool_configs=[ipam_pool])
     result = cli.create_network(name, driver="calico", ipam=ipam_config)
     logger.info("create docker network for app %s : %s" % (name, result))
