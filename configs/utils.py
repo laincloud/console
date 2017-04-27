@@ -16,7 +16,7 @@ CURRENT_FOLDER = os.path.abspath(os.path.dirname(__file__))
 CONFIG_FOLDER = 'docker'
 
 LVAULT_CONNECT_TIMEOUT = 3
-LVAULT_READ_TIMEOUT = 5
+LVAULT_READ_TIMEOUT = 20
 
 
 def get_config_content(access_token, appname, procname):
