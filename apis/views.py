@@ -1321,6 +1321,7 @@ class ConfigApi:
                 app.appname, config_tag, config_layer_count, target_repo, target_tag)
         return "%s:%s-%s" % (target_repo, target_tag, config_tag)
 
+
 class StreamrouterApi:
 
     @classmethod

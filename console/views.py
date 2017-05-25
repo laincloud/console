@@ -389,4 +389,3 @@ def api_streamrouter(request):
 def api_streamrouter_get(request):
     status_code, view_object, msg, url = StreamrouterApi.list_ports()
     return render_json_response(status_code, 'streamrouter', view_object, msg, url)
-
