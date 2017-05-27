@@ -21,11 +21,11 @@ def calico_profile_rule_add(profile_name, rule_type, rule):
     else:
         raise CalicoException(
             "calico rule type must be inbound_rules or outbound_rules")
-    calico_client.profile_update_rules(profile_name)
+    calico_client.profile_update_rules(profile)
 
 
 def calico_profile_rule_add_inbound_allow_from_tag_at_first(profile_name, tag):
     rule = pycalico.datastore_datatypes.Rule()
-    rule['action'] = allow
+    rule['action'] = 'allow'
     rule['src_tag'] = tag
     calico_profile_rule_add(profile_name, "inbound_rules", rule)

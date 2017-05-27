@@ -53,7 +53,7 @@ def get_meta_version_from_tag(tag):
 
 def calico_rule(rule):
     c_rule = pycalico.datastore_datatypes.Rule()
-    for (k, v) in rule:
+    for k, v in rule.iteritems():
         c_rule[k] = v
     return c_rule
 
@@ -198,7 +198,7 @@ def docker_network_exists(name):
 def docker_network_add(name):
     cli = get_docker_client(DOCKER_BASE_URL)
     ipam_pool = create_ipam_pool(subnet=CALICO_NETWORK)
-    ipam_config = create_ipam_config(driver="calico", pool_configs=[ipam_pool])
+    ipam_config = create_ipam_config(driver="calico-ipam", pool_configs=[ipam_pool])
     result = cli.create_network(name, driver="calico", ipam=ipam_config)
     logger.info("create docker network for app %s : %s" % (name, result))
 
