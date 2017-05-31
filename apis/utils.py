@@ -80,9 +80,9 @@ def add_calico_profile_for_app(calico_profile):
                     calico_profile)
         docker_network_add(calico_profile)
         outbound_rules, inbound_rules = get_calico_default_rules()
-        for rule in outbound_rules:
+        for rule in reversed(outbound_rules):
             calico_profile_rule_add(calico_profile, "outbound_rules", rule)
-        for rule in inbound_rules:
+        for rule in reversed(inbound_rules):
             calico_profile_rule_add(calico_profile, "inbound_rules", rule)
         return True
     return False

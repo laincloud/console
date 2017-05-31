@@ -1,6 +1,9 @@
+# -*- coding: utf-8
+
 import pycalico.datastore_datatypes
 import pycalico.datastore
 from commons.settings import ETCD_AUTHORITY
+from .utils import CalicoException
 
 pycalico.datastore.ETCD_AUTHORITY_DEFAULT = ETCD_AUTHORITY
 calico_client = pycalico.datastore.DatastoreClient()
