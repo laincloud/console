@@ -1,0 +1,16 @@
+sudo: false
+
+services:
+  - docker
+
+language: python
+
+python:
+  - "2.7"
+
+install:
+  - pip install lain-cli
+
+script:
+  - lain config save-global private_docker_registry registry.lain.local
+  - lain build
