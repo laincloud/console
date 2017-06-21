@@ -9,13 +9,14 @@ build:
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
       - git clone --depth=1 https://github.com/golang/net.git $GOPATH/src/golang.org/x/net
       - go get github.com/mijia/gobuildweb
-      - cd $GOPATH/src/github.com/mijia/gobuildweb && go install
+      - cd $GOPATH/src/github.com/mijia/gobuildweb && sed -i '/deps = append(deps, "browserify", "coffeeify", "envify", "uglifyify", "babelify", "babel-preset-es2015", "babel-preset-react", "nib", "stylus")/d' cmds.go  && go install
       - mkdir -p $GOPATH/src/github.com/laincloud
       - cd $GOPATH/src/github.com/laincloud && git clone https://github.com/laincloud/archon.git
       - cd $GOPATH/src/github.com/laincloud/archon && gobuildweb dist
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
   script:
+    - cd $(npm root -g)/npm && npm install fs-extra && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js # fix npm error
     - cd $GOPATH/src/github.com/laincloud/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/ # note docker may use cache, you should delete the old image
     - unzip -o /lain/app/archon-0.1.zip
     - pip install -r pip-req.txt
