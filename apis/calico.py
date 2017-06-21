@@ -3,11 +3,12 @@
 import pycalico.datastore_datatypes
 import pycalico.datastore
 from commons.settings import ETCD_AUTHORITY
-from .utils import CalicoException
 
 pycalico.datastore.ETCD_AUTHORITY_DEFAULT = ETCD_AUTHORITY
 calico_client = pycalico.datastore.DatastoreClient()
 
+class CalicoException(Exception):
+	pass
 
 def calico_profile_rule_add(profile_name, rule_type, rule):
     """Add a single rule of type rules_type at the first position
