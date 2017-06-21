@@ -53,7 +53,6 @@ LAIN_ADMIN_ROLE = environ.get("CONSOLE_LAIN_ADMIN_ROLE", "admin")
 # calico setting
 CALICO_NETWORK = get_etcd_value(
     "/lain/config/calico_network", ETCD_AUTHORITY, default=None)
-CALICOCTL_BIN = environ.get("CALICOCTL_BIN", "/externalbin/calicoctl")
 CALICO_RULE_KEY = environ.get(
     "CALICO_RULE_KEY", "/lain/config/calico_default_rule")
 

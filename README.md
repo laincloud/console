@@ -33,7 +33,7 @@ LAIN Console 的架构图如下所示：
 
 - commons: 公共模块，封装了一些公有的环境变量，同时对 calico、registry、etcd 等的操作进行了封装； 
 
-- external bin：包括 calicoctl 以及 rfpctl，calicoctl 用于提供 calico profile 设置，rfpctl 用于构建 config image；
+- external bin：包括 rfpctl，rfpctl 用于构建 config image；
 
 LAIN Console 的 API 可以在[这里](docs/API.md)查看
 

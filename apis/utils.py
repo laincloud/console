@@ -14,10 +14,12 @@ from cStringIO import StringIO
 from commons.miscs import NoAvailableImages
 import commons.utils
 from commons.settings import (PRIVATE_REGISTRY, DOCKER_BASE_URL, DEBUG,
-                              ETCD_AUTHORITY, CALICOCTL_BIN, CALICO_NETWORK,
+                              ETCD_AUTHORITY, CALICO_NETWORK,
                               SYSTEM_VOLUMES, CALICO_RULE_KEY,
                               DOMAIN, EXTRA_DOMAINS)
 from log import logger
+from .calico import (calico_profile_rule_add)
+import pycalico.datastore_datatypes
 
 
 def read_from_etcd(key):
@@ -49,16 +51,23 @@ def get_meta_version_from_tag(tag):
         return None
 
 
+def calico_rule(rule):
+    c_rule = pycalico.datastore_datatypes.Rule()
+    for k, v in rule.iteritems():
+        c_rule[k] = v
+    return c_rule
+
+
 def get_calico_default_rules():
     inbound_rules, outbound_rules = [], []
     try:
         etcd_result = read_from_etcd(CALICO_RULE_KEY)
         calico_rules = json.loads(
             etcd_result.value)  # pylint: disable=no-member
-        for rule in calico_rules["outbound"]:
-            outbound_rules.append(rule)
-        for rule in calico_rules["inbound"]:
-            inbound_rules.append(rule)
+        for rule in calico_rules["outbound_rules"]:
+            outbound_rules.append(calico_rule(rule))
+        for rule in calico_rules["inbound_rules"]:
+            inbound_rules.append(calico_rule(rule))
     except Exception, e:
         logger.error("error parsing calico default rule : %s" % str(e))
         return [], []
@@ -71,10 +80,10 @@ def add_calico_profile_for_app(calico_profile):
                     calico_profile)
         docker_network_add(calico_profile)
         outbound_rules, inbound_rules = get_calico_default_rules()
-        for rule in outbound_rules:
-            calicoctl_profile_rule_op(calico_profile, "add outbound %s" % rule)
-        for rule in inbound_rules:
-            calicoctl_profile_rule_op(calico_profile, "add inbound %s" % rule)
+        for rule in reversed(outbound_rules):
+            calico_profile_rule_add(calico_profile, "outbound_rules", rule)
+        for rule in reversed(inbound_rules):
+            calico_profile_rule_add(calico_profile, "inbound_rules", rule)
         return True
     return False
 
@@ -189,7 +198,7 @@ def docker_network_exists(name):
 def docker_network_add(name):
     cli = get_docker_client(DOCKER_BASE_URL)
     ipam_pool = create_ipam_pool(subnet=CALICO_NETWORK)
-    ipam_config = create_ipam_config(driver="calico", pool_configs=[ipam_pool])
+    ipam_config = create_ipam_config(driver="calico-ipam", pool_configs=[ipam_pool])
     result = cli.create_network(name, driver="calico", ipam=ipam_config)
     logger.info("create docker network for app %s : %s" % (name, result))
 
@@ -197,21 +206,6 @@ def docker_network_add(name):
 def docker_network_remove(name):
     cli = get_docker_client(DOCKER_BASE_URL)
     cli.remove_network(name)
-
-
-def calicoctl_profile_rule_op(profile, op):
-    cmd = "DOCKER_HOST=%s ETCD_AUTHORITY=%s %s profile %s rule %s" % (
-        DOCKER_BASE_URL,
-        ETCD_AUTHORITY,
-        CALICOCTL_BIN,
-        profile,
-        op
-    )
-    return_code = subprocess.call(cmd, shell=True)
-    if DEBUG or return_code == 0:
-        logger.info("calico cmd %s : success" % cmd)
-    else:
-        raise CalicoException("calico cmd %s : fail" % (cmd, ))
 
 
 def get_system_volumes_from_etcd(appname):

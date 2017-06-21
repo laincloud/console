@@ -3,7 +3,7 @@ appname: console
 build:
   base: laincloud/centos-lain:20160503
   prepare:
-    version: "20161215"
+    version: "20170525"
     script:
       - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys

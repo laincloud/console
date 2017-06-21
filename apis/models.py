@@ -17,7 +17,6 @@ from .specs import (
 from .utils import (
     docker_network_exists,
     docker_network_remove,
-    calicoctl_profile_rule_op,
     add_calico_profile_for_app,
     get_domains,
 )
@@ -28,6 +27,8 @@ from commons.settings import (
     MAIN_DOMAIN,
 )
 from log import logger
+from .calico import (
+    calico_profile_rule_add_inbound_allow_from_tag_at_first, calico_profile_rule_add)
 
 
 default_deploy = Deploy.create(APISERVER)
@@ -50,13 +51,9 @@ class App(BaseApp):
         return self.appname
 
     def add_calico_profile(self):
-        '''
-        - calicoctl profile add self.appname
-        - calicoctl profile self.appname rules update (adding allow from admin)
-        '''
         if add_calico_profile_for_app(self.calico_profile):
-            calicoctl_profile_rule_op(
-                self.calico_profile, "add inbound allow from tag lain --at=1")
+            calico_profile_rule_add_inbound_allow_from_tag_at_first(
+                self.calico_profile, "lain")
 
     def remove_calico_profile(self):
         if docker_network_exists(self.docker_network):
@@ -328,7 +325,7 @@ class App(BaseApp):
         remove_missed_results = {}
 
         current_pgs = ["%s.%s.%s" % (self.appname, p.type.name, p.name)
-                            for p in self.lain_config.procs.values()]
+                       for p in self.lain_config.procs.values()]
         try:
             for proc in origin_procs:
                 pg_name = "%s.%s.%s" % (
@@ -348,7 +345,7 @@ class App(BaseApp):
                     remove_failed_results[pg_name] = remove_r
         except Exception, e:
             logger.warning("failed when trying to remove useless proc of app %s: %s" %
-                (self.appname, str(e)))
+                           (self.appname, str(e)))
         remove_results = {
             'OK': len(remove_failed_results) == 0,
             'remove_success_results': remove_success_results,
@@ -531,10 +528,10 @@ class App(BaseApp):
         client_app_profile = self.calico_profile
         portal_profile = "%s_%s" % (dependency_pod_name, self.appname)
         if add_calico_profile_for_app(portal_profile):
-            calicoctl_profile_rule_op(
-                portal_profile, "add inbound allow from tag %s --at=1" % client_app_profile)
-            calicoctl_profile_rule_op(
-                service_app_profile, "add inbound allow from tag %s --at=1" % portal_profile)
+            calico_profile_rule_add_inbound_allow_from_tag_at_first(
+                portal_profile, client_app_profile)
+            calico_profile_rule_add_inbound_allow_from_tag_at_first(
+                service_app_profile, portal_profile)
 
     def dependency_remove(self, dependency_pod_name):
         return self.default_deploy.remove_dependency(dependency_pod_name)

@@ -46,7 +46,8 @@ urlpatterns = [
     url(r'^(?:api/)?v1/resources/(?P<resourcename>[^/]+)/instances/$',
         'console.views.api_instances', name='api_instances'),
 
-    url(r'^(?:api/)?v1/usedstreamrouterports', 'console.views.api_streamrouter', name='api_streamrouter'),
+    url(r'^(?:api/)?v1/usedstreamrouterports',
+        'console.views.api_streamrouter', name='api_streamrouter'),
 
 ]
 
