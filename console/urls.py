@@ -42,12 +42,19 @@ urlpatterns = [
         'console.views.api_role', name='api_role'),
     url(r'^(?:api/)?v1/repos/(?P<appname>[^/]+)/versions/$',
         'console.views.api_versions', name='api_versions'),
+    url(r'^(?:api/)?v1/repos/(?P<appname>[^/]+)/details/$',
+        'console.views.api_details', name='api_details'),
+    url(r'^(?:api/)?v1/repos/(?P<appname>[^/]+)/push/$',
+        'console.views.api_image_push', name='api_image_push'),
 
     url(r'^(?:api/)?v1/resources/(?P<resourcename>[^/]+)/instances/$',
         'console.views.api_instances', name='api_instances'),
 
     url(r'^(?:api/)?v1/usedstreamrouterports',
         'console.views.api_streamrouter', name='api_streamrouter'),
+
+    url(r'^(?:api/)?v1/notify/(?P<notify_type>[^/]+)/$',
+        'console.views.api_notify', name='api_notify'),
 
 ]
 

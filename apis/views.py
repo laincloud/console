@@ -3,12 +3,13 @@
 import copy
 import humanfriendly
 from threading import Thread
-from .models import App, Resource, Streamrouter, recursive_deploy, default_deploy
+from .models import App, Resource, Streamrouter, Notify, recursive_deploy, default_deploy
 from .specs import render_podgroup_spec_from_json, AppType
 from authorize.models import Authorize, Group
 from configs.models import Config
-from commons.miscs import InvalidMetaVersion, NoAvailableImages
+from commons.miscs import InvalidMetaVersion, NoAvailableImages, InvalidLainYaml
 from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES
+from notifies.notify import image_push_notify
 from .utils import convert_time_from_deployd
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
@@ -291,6 +292,16 @@ class AppApi:
             'appname': appname,
             'tags': versions,
             'url': reverse('api_versions', kwargs={'appname': appname}),
+        }
+        return data
+
+    @classmethod
+    def render_detail_data(cls, appname, giturl, meta_version):
+        data = {
+            'appname': appname,
+            'giturl': giturl,
+            'meta_version': meta_version,
+            'url': reverse('api_details', kwargs={'appname': appname}),
         }
         return data
 
@@ -689,11 +700,45 @@ class AppApi:
 
     @classmethod
     def get_versions(cls, appname, options=None):
-        try:
-            app = App.get_or_none(appname)
+        def handle(app):
             availabe_meta_versions = app.availabe_meta_versions()
             return (200, AppApi.render_version_data(appname, availabe_meta_versions),
                     '', reverse('api_versions', kwargs={'appname': appname}))
+        return cls.deal_with_appname(appname, handle)
+
+    @classmethod
+    def get_details(cls, appname, options=None):
+        def handle(app):
+            return (200, AppApi.render_detail_data(appname, app.giturl, app.meta_version),
+                    '', reverse('api_details', kwargs={'appname': appname}))
+        return cls.deal_with_appname(appname, handle)
+
+    @classmethod
+    def post_image_push(cls, appname, authors):
+        commitid_len = 40
+
+        def handle(app):
+            datas = {
+                "appname": appname,
+                "image": app.meta_version,
+                "lastid": app.meta_version[-commitid_len:],
+                "nextid": app.latest_meta_version[-commitid_len:],
+                "giturl": app.giturl,
+                "authors": authors,
+            }
+            try:
+                app.check_latest_giturl()
+            except InvalidLainYaml, e:
+                return (400, None, '%s' % e, reverse('api_image_push', kwargs={'appname': appname}))
+            image_push_notify(datas)
+            return (200, None, 'ok', reverse('api_image_push', kwargs={'appname': appname}))
+        return cls.deal_with_appname(appname, handle)
+
+    @classmethod
+    def deal_with_appname(cls, appname, handle):
+        try:
+            app = App.get_or_none(appname)
+            return handle(app)
         except NoAvailableImages, e:
             return (404, None, 'no avaible images for app %s:\n%s\nplease push images first.' % (appname, e),
                     reverse('api_versions', kwargs={'appname': appname}))
@@ -703,7 +748,6 @@ class AppApi:
                     'fatal error when getting version of app %s:\n%s\nplease contact with admin of lain\n' % (
                         appname, e),
                     reverse('api_repo', kwargs={'appname': appname}))
-
 
 '''
 这个类响应 console.views 的 对 Proc 相关的调用
@@ -1331,3 +1375,29 @@ class StreamrouterApi:
             return (400, None, '', reverse('api_streamrouter'))
         else:
             return (200, resp, '', reverse('api_streamrouter'))
+
+
+class NotifyApi:
+
+    @classmethod
+    def list_notifies(cls, notify_type):
+        return cls.deal_notifies(Notify.get_notifies, notify_type)
+
+    @classmethod
+    def post_notifies(cls, notify_type, notify_url):
+        return cls.deal_notifies(Notify.post_notifies, notify_type, notify_url)
+
+    @classmethod
+    def del_notifies(cls, notify_type, notify_url):
+        return cls.deal_notifies(Notify.del_notifies, notify_type, notify_url)
+
+    @classmethod
+    def deal_notifies(cls, handle, notify_type, *args):
+        if len(args) > 0:
+            resp = handle(notify_type, *args)
+        else:
+            resp = handle(notify_type)
+        if resp == None:
+            return (400, None, '', reverse('api_notify', kwargs={'notify_type': notify_type}))
+        else:
+            return (200, resp, '', reverse('api_notify', kwargs={'notify_type': notify_type}))

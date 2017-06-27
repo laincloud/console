@@ -39,6 +39,7 @@ class BaseApp:
     ETCD_PREFIX = '/lain/fake'
 
     appname = ''
+    giturl = ''
     meta_version = ''
     meta = ''
     default_image = ''
@@ -63,6 +64,7 @@ class BaseApp:
         try:
             app_info = json.loads(etcd_value)
             appname = app_info.get('appname', '')
+            giturl = app_info.get('giturl', '')
             meta_version = app_info.get('meta_version', '')
             meta = app_info.get('meta', '')
             default_image = app_info.get('default_image', '')
@@ -74,6 +76,7 @@ class BaseApp:
                 raise InvalidStoreData("appname should not be empty")
             app = cls()
             app.appname = appname
+            app.giturl = giturl
             app.meta_version = meta_version
             app.meta = meta
             app.default_image = default_image
@@ -130,6 +133,7 @@ class BaseApp:
         return app
 
     def clear(self):
+        self.giturl = ''
         self.meta_version = ''
         self.meta = ''
         self.app_type = ''
@@ -144,6 +148,7 @@ class BaseApp:
         self.last_update = get_current_time()
         etcd_value = json.dumps({
             'appname': self.appname,
+            'giturl': self.giturl,
             'meta_version': self.meta_version,
             'meta': self.meta,
             'default_image': self.default_image,
@@ -245,6 +250,12 @@ class BaseApp:
                     self.app_type = AppType.Service
         self.save()
 
+    def update_git_url(self, giturl, force=False):
+        if force or self.giturl == '':
+            self.giturl = giturl
+            return True
+        return False
+
     def _load_apptype_from_meta(self):
         try:
             if self.meta == '' or self.meta_version == '':
@@ -287,6 +298,10 @@ class BaseApp:
         meta = self.fetch_meta(meta_version)
         if not isinstance(meta, dict):
             return None
+
+        self.check_giturl(meta, update=True)
+        meta['giturl'] = self.giturl
+
         self.meta = yaml.safe_dump(meta, default_style='"')
         self.meta_version = meta_version
         if self.appname != meta['appname']:
@@ -312,6 +327,24 @@ class BaseApp:
             self.app_spec = render_app_spec(self.lain_config)
         logger.debug("finish updating meta of app `%s`" % self.appname)
         return result
+
+    def check_giturl(self, meta, update=False):
+        giturl = meta.get('giturl', '').rstrip(".git")
+        if giturl != '' and not giturl.startswith("http"):
+            giturl = "http://" + giturl
+        if update and self.update_git_url(giturl):
+            return
+        if giturl != self.giturl:
+            raise InvalidLainYaml(
+                "app giturl '%s' doesn't match with bound url '%s'" % (giturl, self.giturl))
+
+    def check_meta_giturl(self, meta_version):
+        meta = self.fetch_meta(meta_version)
+        self.check_giturl(meta)
+
+    def check_latest_giturl(self):
+        latest_version = self.latest_meta_version
+        self.check_meta_giturl(latest_version)
 
     def check_latest_version(self):
         logger.debug("check latest version of app %s" % self.appname)

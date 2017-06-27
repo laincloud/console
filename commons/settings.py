@@ -68,3 +68,10 @@ NODE_NETWORK = get_etcd_value(
 RFP_BIN = environ.get("RFP_BIN", "/externalbin/rfpctl")
 LVAULT_CONFIG_URL = environ.get(
     "LVAULT_CONFIG_URL", "http://lvault.%s/v2/secrets" % DOMAIN)
+
+# notifies setting
+CONSOLE_NOTIFIES_PREFIX = environ.get(
+    "CONSOLE_NOTIFIES_PREFIX", "/lain/console/notifies")
+IMAGE_PUSH_KEY = environ.get(
+    "IMAGE_PUSH_KEY", "image_push")
+NOTIFIES_TYPES = {'imagepush': IMAGE_PUSH_KEY}
