@@ -8,8 +8,8 @@ import subprocess
 import re
 from retrying import retry
 from time import gmtime, strftime
-from docker import Client
-from docker.utils import create_ipam_config, create_ipam_pool
+import docker
+from docker.types import IPAMConfig, IPAMPool
 from cStringIO import StringIO
 from commons.miscs import NoAvailableImages
 import commons.utils
@@ -89,7 +89,7 @@ def add_calico_profile_for_app(calico_profile):
 
 
 def get_docker_client(docker_base_url):
-    return Client(base_url=docker_base_url)
+    return docker.DockerClient(base_url=docker_base_url).api
 
 
 def normalize_meta_version(meta_version):
@@ -157,8 +157,8 @@ def get_meta_from_registry(app, meta_version, registry=None):
         image = "%s/%s:meta-%s" % (registry, app, meta_version)
         command = '/bin/sleep 0.1'
         c = cli.create_container(image=image, command=command)
-        r = cli.copy(container=c.get('Id'), resource='/lain.yaml')
-        tar = tarfile.open(fileobj=StringIO(r.data))
+        r = cli.get_archive(container=c.get('Id'), path='/lain.yaml')
+        tar = tarfile.open(fileobj=StringIO(r[0].data))
         f = tar.extractfile('lain.yaml')
         y = yaml.safe_load(f.read())
     except Exception, e:
@@ -197,8 +197,8 @@ def docker_network_exists(name):
 
 def docker_network_add(name):
     cli = get_docker_client(DOCKER_BASE_URL)
-    ipam_pool = create_ipam_pool(subnet=CALICO_NETWORK)
-    ipam_config = create_ipam_config(driver="calico-ipam", pool_configs=[ipam_pool])
+    ipam_pool = IPAMPool(subnet=CALICO_NETWORK)
+    ipam_config = IPAMConfig(driver="calico-ipam", pool_configs=[ipam_pool])
     result = cli.create_network(name, driver="calico", ipam=ipam_config)
     logger.info("create docker network for app %s : %s" % (name, result))
 

@@ -26,6 +26,11 @@ from commons.settings import (
     APPS_ETCD_PREFIX,
     MAIN_DOMAIN,
 )
+from notifies.notify import (
+    fetch_notifies,
+    add_notifies,
+    delete_notifies,
+)
 from log import logger
 from .calico import (
     calico_profile_rule_add_inbound_allow_from_tag_at_first, calico_profile_rule_add)
@@ -631,3 +636,18 @@ class Streamrouter():
         else:
             logger.error("fail to get ports of streamrouter")
             return None
+
+
+class Notify():
+
+    @classmethod
+    def get_notifies(cls, notify_type):
+        return fetch_notifies(notify_type)
+
+    @classmethod
+    def post_notifies(cls, notify_type, notify_url):
+        return add_notifies(notify_type, notify_url)
+
+    @classmethod
+    def del_notifies(cls, notify_type, notify_url):
+        return delete_notifies(notify_type, notify_url)

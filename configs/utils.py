@@ -5,13 +5,13 @@ import uuid
 import shutil
 import requests
 import subprocess
-from docker import Client
+import docker
 from commons.settings import (LVAULT_CONFIG_URL, DOCKER_BASE_URL,
                               PRIVATE_REGISTRY, RFP_BIN)
 from log import logger
 
 
-cli = Client(base_url=DOCKER_BASE_URL)
+cli = docker.DockerClient(base_url=DOCKER_BASE_URL).api
 CURRENT_FOLDER = os.path.abspath(os.path.dirname(__file__))
 CONFIG_FOLDER = 'docker'
 
@@ -98,7 +98,7 @@ def overlap_layer_to_image(appname, cfg_tag, cfg_layer_count, sjwt, target_repo,
         appname, cfg_tag, PRIVATE_REGISTRY, target_repo, target_tag, PRIVATE_REGISTRY))
 
     cmd = "%s -srcReg=%s -srcRepo=%s -srcTag=%s -srcLayerCount=%s -srcJWT=%s \
-    	   -targetReg=%s -targetRepo=%s -targetTag=%s -targetJWT=%s -newTag=%s" % (
+           -targetReg=%s -targetRepo=%s -targetTag=%s -targetJWT=%s -newTag=%s" % (
         RFP_BIN,
         PRIVATE_REGISTRY,
         appname,

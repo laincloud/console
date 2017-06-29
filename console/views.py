@@ -4,7 +4,7 @@ import json
 from django.shortcuts import render_to_response
 from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
-from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, StreamrouterApi
+from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, StreamrouterApi, NotifyApi
 from apis.views import is_deployable
 from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
@@ -369,10 +369,42 @@ def api_versions(request, appname):
         return api_version_get(request, appname)
 
 
+def api_details(request, appname):
+    if request.method != 'GET':
+        return _invalid_request_method('details', request.method)
+    else:
+        return api_detail_get(request, appname)
+
+
+def api_image_push(request, appname):
+    if request.method != 'POST':
+        return _invalid_request_method('image_push', request.method)
+    else:
+        return api_image_push_post(request, appname)
+
+
 @permission_required('maintain')
 def api_version_get(request, appname):
     status_code, view_object, msg, url = AppApi.get_versions(appname)
     return render_json_response(status_code, 'version', view_object, msg, url)
+
+
+@permission_required('maintain')
+def api_detail_get(request, appname):
+    status_code, view_object, msg, url = AppApi.get_details(appname)
+    return render_json_response(status_code, 'detail', view_object, msg, url)
+
+
+@permission_required('maintain')
+def api_image_push_post(request, appname):
+    try:
+        options = json.loads(request.body)
+        authors = options['authors']
+    except Exception:
+        return render_json_response(400, 'proc', None, 'invalid request: should be json body with authors(array string)', reverse('api_docs'))
+    status_code, view_object, msg, url = AppApi.post_image_push(
+        appname, authors)
+    return render_json_response(status_code, 'image_push', view_object, msg, url)
 
 
 def _invalid_request_method(object_type, method):
@@ -389,3 +421,39 @@ def api_streamrouter(request):
 def api_streamrouter_get(request):
     status_code, view_object, msg, url = StreamrouterApi.list_ports()
     return render_json_response(status_code, 'streamrouter', view_object, msg, url)
+
+
+def api_notify(request, notify_type):
+    if request.method == 'GET':
+        return api_notify_get(request, notify_type)
+    try:
+        options = json.loads(request.body)
+        notify_url = options['notify_url']
+        if request.method == 'POST':
+            return api_notify_post(request, notify_type, notify_url)
+        elif request.method == 'DELETE':
+            return api_notify_del(request, notify_type, notify_url)
+        else:
+            return _invalid_request_method('api_notify', request.method)
+    except Exception:
+        return render_json_response(
+            400, 'notify', None,
+            'invalid request: should be json body with notify_url(array string)',
+            reverse('api_notify', kwargs={'notify_type': notify_type}))
+
+
+def api_notify_post(request, notify_type, notify_url):
+    return api_handle(NotifyApi.post_notifies, notify_type, notify_url)
+
+
+def api_notify_del(request, notify_type, notify_url):
+    return api_handle(NotifyApi.del_notifies, notify_type, notify_url)
+
+
+def api_notify_get(request, notify_type):
+    return api_handle(NotifyApi.list_notifies, notify_type)
+
+
+def api_handle(handle, *args):
+    status_code, view_object, msg, url = handle(*args)
+    return render_json_response(status_code, 'notify', view_object, msg, url)
