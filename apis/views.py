@@ -560,6 +560,7 @@ class AppApi:
                     'error in parsing meta_version: %s\nplease check your App images then try to update your App\n' % ime,
                     reverse('api_app', kwargs={'appname': appname}))
         except Exception, e:
+            client.captureException()
             return (500, None,
                     'fatal error when update app %s:\n%s\nplease contact with admin of lain\n' % (
                         appname, e),

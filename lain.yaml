@@ -31,10 +31,14 @@ web:
   cmd: ./archon.sh
   port: 9000
   memory: 256m
+  secret_files:
+    - config
 
 web.console:
   cmd: ./entry.sh
   port: 8000
+  secret_files:
+    - config
   memory: 256m
   mountpoint:
     - /api
