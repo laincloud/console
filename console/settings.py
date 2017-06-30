@@ -56,6 +56,7 @@ INSTALLED_APPS = (
 
     'apis',
     'deploys',
+    'oplog',
 )
 
 MIDDLEWARE_CLASSES = (
