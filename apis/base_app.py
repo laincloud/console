@@ -84,6 +84,12 @@ class BaseApp:
             app.app_type = app_type
             app.last_update = last_update
             app.last_error = last_error
+
+            app._registry_tags = []
+            app._latest_meta_version = ''
+            app._app_spec = None
+            app._lain_config = None
+
             return app
         except ValueError, e:
             raise InvalidStoreData(e)
