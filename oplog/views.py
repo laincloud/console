@@ -7,6 +7,7 @@ from django.core import serializers
 from .models import OpLog
 from log import logger
 
+show_items_number = 10
 
 def render_json_response(status_code, view_object_name, view_object, msg, url):
     r = JsonResponse({
@@ -21,7 +22,7 @@ def render_json_response(status_code, view_object_name, view_object, msg, url):
 def api_oplogs(request, appname):
     logger.debug(request)
     try:
-        oplogs = OpLog.objects.filter(app=appname)
+        oplogs = OpLog.objects.filter(app=appname).order_by('-pk')[:show_items_number]
     except OpLog.DoesNotExist:
         pass
     return render_json_response(200, "oplog", list(oplogs), "", reverse('api_oplogs', kwargs={"appname": appname}))
