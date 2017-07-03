@@ -1,6 +1,7 @@
 from django.shortcuts import render, render_to_response
 from django.http import JsonResponse
 from django.core.urlresolvers import reverse
+from django.core import serializers
 
 # Create your views here.
 from .models import OpLog
@@ -9,7 +10,7 @@ from log import logger
 
 def render_json_response(status_code, view_object_name, view_object, msg, url):
     r = JsonResponse({
-        view_object_name: view_object,
+        view_object_name: serializers.serialize('json', view_object),
         'msg': msg,
         'url': url
     })

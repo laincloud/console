@@ -8,14 +8,17 @@ class OpLog(models.Model):
     Args:
         user: an sso user_name
         op: should be one of the following operations
-            create
+            reposit
             delete
             deploy
+            update
+            update
             lock
+            scale
         app: the app name
         app_version: if the op is deploy, the app_version is the new version.
         time: the time when the op is begin 
-        message: if the op is lock, is the user's input message; otherwise will be reserved
+        message: if the op is lock, is the user's input message; otherwise will be description for the op
     """
     user = models.CharField(max_length=64)
     op = models.CharField(max_length=16)
