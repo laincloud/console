@@ -29,6 +29,9 @@ class OpLog(models.Model):
 
 
 def add_oplog(user, op, app, app_version, time, message):
-    oplog = OpLog(user=user, op=op, app=app,
-                  app_version=app_version, time=time, message=message)
-    oplog.save()
+    try:
+        oplog = OpLog(user=user, op=op, app=app,
+                      app_version=app_version, time=time, message=message)
+        oplog.save()
+    except:
+        pass
