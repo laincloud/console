@@ -642,7 +642,7 @@ class AppApi:
         add_oplog(AuthApi.operater, "UPDATE", app.appname,
                   target_meta_version, timezone.now(), "")
 
-        # bachup the former setting
+        # backup the former setting
         origin_app = copy.deepcopy(app)
         origin_resource = {} if (
             app.lain_config is None) else app.lain_config.use_resources
