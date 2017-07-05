@@ -7,7 +7,7 @@ from django.core import serializers
 from .models import OpLog
 from log import logger
 
-show_items_number = 10
+show_items_number = 50
 
 def render_json_response(status_code, view_object_name, view_object, msg, url):
     r = JsonResponse({
