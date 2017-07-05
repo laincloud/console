@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.conf import settings
 from django.views.generic import RedirectView
@@ -55,6 +55,8 @@ urlpatterns = [
 
     url(r'^(?:api/)?v1/notify/(?P<notify_type>[^/]+)/$',
         'console.views.api_notify', name='api_notify'),
+
+    url(r'^(?:api/)?v1/oplogs/', include('oplog.urls'))
 
 ]
 

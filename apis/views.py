@@ -15,6 +15,8 @@ from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client
 from log import logger, op_logger
+from oplog.models import add_oplog
+from django.utils import timezone
 
 
 def render_op_result(op_result):
@@ -397,6 +399,8 @@ class AppApi:
         try:
             op_logger.info("DEPLOY: app %s deployed by %s to version %s" % (
                 app.appname, AuthApi.operater, meta_version))
+            add_oplog(AuthApi.operater, "DEPLOY", app.appname,
+                      meta_version, timezone.now(), "")
 
             logger.info("ready create app %s" % app.appname)
             if not app.update_meta(meta_version, force=True, update_spec=False):
@@ -470,6 +474,9 @@ class AppApi:
             op_logger.info("REPOSIT: app %s reposited by %s" %
                            (appname, AuthApi.operater))
 
+            add_oplog(AuthApi.operater, "REPOSIT",
+                      appname, "", timezone.now(), "")
+
             app = App.create(appname)
             success, msg = Group.create_group_for_app(access_token, appname)
             if not success:
@@ -501,6 +508,9 @@ class AppApi:
 
             op_logger.info("DELETE: app %s deleted by %s" %
                            (appname, AuthApi.operater))
+
+            add_oplog(AuthApi.operater, "DELETE",
+                      appname, "", timezone.now(), "")
             logger.info("ready delete app %s" % appname)
 
             is_meta_empty = True
@@ -560,6 +570,7 @@ class AppApi:
                     'error in parsing meta_version: %s\nplease check your App images then try to update your App\n' % ime,
                     reverse('api_app', kwargs={'appname': appname}))
         except Exception, e:
+            client.captureException()
             return (500, None,
                     'fatal error when update app %s:\n%s\nplease contact with admin of lain\n' % (
                         appname, e),
@@ -589,6 +600,9 @@ class AppApi:
     def _update_resource_instance(cls, token, instance, target_meta_version):
         op_logger.info("UPDATE: resource instance %s updated by %s to version %s" % (
             instance.appname, AuthApi.operater, target_meta_version))
+
+        add_oplog(AuthApi.operater, "UPDATE", instance.appname,
+                  target_meta_version, timezone.now(), "update resource instance")
         logger.info("ready update resource instance %s" % instance.appname)
 
         origin_procs = instance.lain_config.procs.values()
@@ -625,8 +639,10 @@ class AppApi:
     def _update_normal_app(cls, token, app, target_meta_version):
         op_logger.info("UPDATE: app %s updated by %s to version %s" % (
             app.appname, AuthApi.operater, target_meta_version))
+        add_oplog(AuthApi.operater, "UPDATE", app.appname,
+                  target_meta_version, timezone.now(), "")
 
-        # bachup the former setting
+        # backup the former setting
         origin_app = copy.deepcopy(app)
         origin_resource = {} if (
             app.lain_config is None) else app.lain_config.use_resources
@@ -873,6 +889,9 @@ class ProcApi:
             op_logger.info("DEPLOY: proc %s from app %s deployed by %s" % (
                 procname, appname, AuthApi.operater))
 
+            add_oplog(AuthApi.operater, "DEPLOY", appname, "",
+                      timezone.now(), "proc depolyd" % procname)
+
             podgroup_name = "%s.%s.%s" % (
                 app.appname, proc.type.name, proc.name)
             podgroup_spec = app.podgroup_spec(podgroup_name)
@@ -985,6 +1004,9 @@ class ProcApi:
                 if verified_options.has_key('num_instances'):
                     op_logger.info("SCALE: proc %s from app %s scaled by %s with instance %d" % (
                         procname, appname, AuthApi.operater, verified_options['num_instances']))
+
+                    add_oplog(AuthApi.operater, "SCALE", appname, "", timezone.now(
+                    ), "proc %s scaled with instance %d" % (procname, verified_options['num_instances']))
                     new_podgroup_spec.NumInstances = verified_options[
                         'num_instances']
                     deploy_result = app.podgroup_scale(new_podgroup_spec)
@@ -994,6 +1016,8 @@ class ProcApi:
                     new_memory = verified_options.get('memory', None)
                     op_logger.info("SCALE: proc %s from app %s scaled by %s with memory %s, cpu %s" % (
                         procname, appname, AuthApi.operater, new_memory, new_cpu))
+                    add_oplog(AuthApi.operater, "SCALE", appname, "", timezone.now(
+                    ), "proc %s scaled with memory %s, cpu %s" % (procname, new_memory, new_cpu))
                     for c in new_podgroup_spec.Pod.Containers:
                         if new_cpu is not None:
                             c.CpuLimit = new_cpu
@@ -1038,6 +1062,8 @@ class ProcApi:
             if pg_status:
                 op_logger.info("DELETE: proc %s from app %s deleted by %s" % (
                     procname, appname, AuthApi.operater))
+                add_oplog(AuthApi.operater, "DELETE", appname, "",
+                          timezone.now(), "delete proc %s" % procname)
 
                 podgroup_name = "%s.%s.%s" % (
                     appname, proc.type.name, proc.name)

@@ -7,8 +7,10 @@ from commons.settings import ETCD_AUTHORITY
 pycalico.datastore.ETCD_AUTHORITY_DEFAULT = ETCD_AUTHORITY
 calico_client = pycalico.datastore.DatastoreClient()
 
+
 class CalicoException(Exception):
-	pass
+    pass
+
 
 def calico_profile_rule_add(profile_name, rule_type, rule):
     """Add a single rule of type rules_type at the first position
