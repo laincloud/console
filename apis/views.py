@@ -1322,25 +1322,56 @@ class ConfigApi:
             pg_list = instance_pg_name.split(".")[-2:]
             pg_list.insert(0, resourcename)
             return ".".join(pg_list)
+        def secret_files_bypass(app, pg_name):
+            for proc in app.lain_config.procs.values():
+                if "%s.%s.%s" % (app.appname, proc.type.name, proc.name) == pg_name:
+                    return proc.secret_files_bypass
+            return False
 
         if not cls.use_lvault():
             return True
         for pg in instance.app_spec.PodGroups:
             pg_name = get_resource_pg_name(resource.appname, pg.Name)
             basic_image = pg.Pod.Containers[0].Image
-            release_image = cls.construct_config(
-                token, resource, pg_name, basic_image)
+            if pg_secret_files_bypass(resource.appname, pg_name):
+                try:
+                    release_image = cls.construct_config(
+                        token, resource, pg.Name, basic_image)
+                except Exception as e:
+                    release_image = None
+                    logger.info(str(e))
+                    logger.info("secret_files_bypass is True, ignore")
+                    pass
+            else:
+                release_image = cls.construct_config(
+                     token, resource, pg.Name, basic_image)
             pg.Pod.Containers[
                 0].Image = release_image if release_image else basic_image
 
     @classmethod
     def construct_config_for_app(cls, token, app):
+        def secret_files_bypass(app, pg_name):
+            for proc in app.lain_config.procs.values():
+                if "%s.%s.%s" % (app.appname, proc.type.name, proc.name) == pg_name:
+                    return proc.secret_files_bypass
+            return False
+
         if not cls.use_lvault():
             return
         for pg in app.app_spec.PodGroups:
             basic_image = pg.Pod.Containers[0].Image
-            release_image = cls.construct_config(
-                token, app, pg.Name, basic_image)
+            if secret_files_bypass(app, pg.Name):
+                try:
+                    release_image = cls.construct_config(
+                        token, app, pg.Name, basic_image)
+                except Exception as e:
+                    release_image = None
+                    logger.info(str(e))
+                    logger.info("secret_files_bypass is True, ignore")
+                    pass
+            else:
+                release_image = cls.construct_config(
+                     token, app, pg.Name, basic_image)
             pg.Pod.Containers[
                 0].Image = release_image if release_image else basic_image
 
