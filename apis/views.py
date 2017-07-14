@@ -1333,10 +1333,10 @@ class ConfigApi:
         for pg in instance.app_spec.PodGroups:
             pg_name = get_resource_pg_name(resource.appname, pg.Name)
             basic_image = pg.Pod.Containers[0].Image
-            if pg_secret_files_bypass(resource.appname, pg_name):
+            if secret_files_bypass(resource, pg_name):
                 try:
                     release_image = cls.construct_config(
-                        token, resource, pg.Name, basic_image)
+                        token, resource, pg_name, basic_image)
                 except Exception as e:
                     release_image = None
                     logger.info(str(e))
