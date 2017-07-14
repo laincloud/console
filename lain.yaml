@@ -33,12 +33,14 @@ web:
   memory: 256m
   secret_files:
     - config
+  secret_files_bypass: True
 
 web.console:
   cmd: ./entry.sh
   port: 8000
   secret_files:
     - config
+  secret_files_bypass: True
   memory: 256m
   mountpoint:
     - /api

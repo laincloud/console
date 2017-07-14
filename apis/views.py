@@ -1346,24 +1346,37 @@ class ConfigApi:
 
     @classmethod
     def construct_config(cls, token, app, pg_name, base_image):
-        def get_defined_secret_files(app, pg_name):
+        def get_proc(app, pg_name):
             for proc in app.lain_config.procs.values():
                 if "%s.%s.%s" % (app.appname, proc.type.name, proc.name) == pg_name:
-                    return proc.secret_files
+                    return proc
+        def get_secret_files_bypass(app, pg_name):
+            return get_proc(app, pg_name).secret_files_bypass
+        def get_defined_secret_files(app, pg_name):
+            return get_proc(app, pg_name).secret_files
 
-        defined_secret_files = get_defined_secret_files(app, pg_name)
-        if len(defined_secret_files) == 0:
-            return None
+        try:
+            defined_secret_files = get_defined_secret_files(app, pg_name)
+            if len(defined_secret_files) == 0:
+                return None
 
-        config_list = Config.get_configs(token, app.appname, pg_name)
-        config_list, timestamp = Config.validate_defined_secret_files(
-            config_list, defined_secret_files)
-        config_tag = cls.get_config_image(
-            app, config_list, defined_secret_files, pg_name, timestamp)
+            config_list = Config.get_configs(token, app.appname, pg_name)
+            config_list, timestamp = Config.validate_defined_secret_files(
+                config_list, defined_secret_files)
+            config_tag = cls.get_config_image(
+                app, config_list, defined_secret_files, pg_name, timestamp)
 
-        new_release_image = cls.gen_release_image(
-            app, base_image, config_tag, len(config_list))
-        return "%s/%s" % (PRIVATE_REGISTRY, new_release_image)
+            new_release_image = cls.gen_release_image(
+                app, base_image, config_tag, len(config_list))
+        except Exception as e:
+            if get_secret_files_bypass(app, pg_name):
+                logger.warn(str(e))
+                logger.warn("secret_files_bypass is True, ignore")
+                return base_image
+            else:
+                raise e
+        else:
+            return "%s/%s" % (PRIVATE_REGISTRY, new_release_image)
 
     @classmethod
     def get_config_image(cls, app, config_list, defined_secret_files, pg_name, timestamp):
