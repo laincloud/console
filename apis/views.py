@@ -16,7 +16,6 @@ from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client
 from log import logger, op_logger
 from oplog.models import add_oplog
-from django.utils import timezone
 
 
 def render_op_result(op_result):
@@ -400,7 +399,7 @@ class AppApi:
             op_logger.info("DEPLOY: app %s deployed by %s to version %s" % (
                 app.appname, AuthApi.operater, meta_version))
             add_oplog(AuthApi.operater, "DEPLOY", app.appname,
-                      meta_version, timezone.now(), "")
+                      meta_version, "")
 
             logger.info("ready create app %s" % app.appname)
             if not app.update_meta(meta_version, force=True, update_spec=False):
@@ -475,7 +474,7 @@ class AppApi:
                            (appname, AuthApi.operater))
 
             add_oplog(AuthApi.operater, "REPOSIT",
-                      appname, "", timezone.now(), "")
+                      appname, "", "")
 
             app = App.create(appname)
             success, msg = Group.create_group_for_app(access_token, appname)
@@ -510,7 +509,7 @@ class AppApi:
                            (appname, AuthApi.operater))
 
             add_oplog(AuthApi.operater, "DELETE",
-                      appname, "", timezone.now(), "")
+                      appname, "", "")
             logger.info("ready delete app %s" % appname)
 
             is_meta_empty = True
@@ -602,7 +601,7 @@ class AppApi:
             instance.appname, AuthApi.operater, target_meta_version))
 
         add_oplog(AuthApi.operater, "UPDATE", instance.appname,
-                  target_meta_version, timezone.now(), "update resource instance")
+                  target_meta_version, "update resource instance")
         logger.info("ready update resource instance %s" % instance.appname)
 
         origin_procs = instance.lain_config.procs.values()
@@ -640,7 +639,7 @@ class AppApi:
         op_logger.info("UPDATE: app %s updated by %s to version %s" % (
             app.appname, AuthApi.operater, target_meta_version))
         add_oplog(AuthApi.operater, "UPDATE", app.appname,
-                  target_meta_version, timezone.now(), "")
+                  target_meta_version, "")
 
         # backup the former setting
         origin_app = copy.deepcopy(app)
@@ -890,7 +889,7 @@ class ProcApi:
                 procname, appname, AuthApi.operater))
 
             add_oplog(AuthApi.operater, "DEPLOY", appname, "",
-                      timezone.now(), "proc depolyd" % procname)
+                      "proc depolyd" % procname)
 
             podgroup_name = "%s.%s.%s" % (
                 app.appname, proc.type.name, proc.name)
@@ -1005,8 +1004,8 @@ class ProcApi:
                     op_logger.info("SCALE: proc %s from app %s scaled by %s with instance %d" % (
                         procname, appname, AuthApi.operater, verified_options['num_instances']))
 
-                    add_oplog(AuthApi.operater, "SCALE", appname, "", timezone.now(
-                    ), "proc %s scaled with instance %d" % (procname, verified_options['num_instances']))
+                    add_oplog(AuthApi.operater, "SCALE", appname, "", "proc %s scaled with instance %d" % (
+                        procname, verified_options['num_instances']))
                     new_podgroup_spec.NumInstances = verified_options[
                         'num_instances']
                     deploy_result = app.podgroup_scale(new_podgroup_spec)
@@ -1016,8 +1015,8 @@ class ProcApi:
                     new_memory = verified_options.get('memory', None)
                     op_logger.info("SCALE: proc %s from app %s scaled by %s with memory %s, cpu %s" % (
                         procname, appname, AuthApi.operater, new_memory, new_cpu))
-                    add_oplog(AuthApi.operater, "SCALE", appname, "", timezone.now(
-                    ), "proc %s scaled with memory %s, cpu %s" % (procname, new_memory, new_cpu))
+                    add_oplog(AuthApi.operater, "SCALE", appname, "", "proc %s scaled with memory %s, cpu %s" % (
+                        procname, new_memory, new_cpu))
                     for c in new_podgroup_spec.Pod.Containers:
                         if new_cpu is not None:
                             c.CpuLimit = new_cpu
@@ -1063,7 +1062,7 @@ class ProcApi:
                 op_logger.info("DELETE: proc %s from app %s deleted by %s" % (
                     procname, appname, AuthApi.operater))
                 add_oplog(AuthApi.operater, "DELETE", appname, "",
-                          timezone.now(), "delete proc %s" % procname)
+                          "delete proc %s" % procname)
 
                 podgroup_name = "%s.%s.%s" % (
                     appname, proc.type.name, proc.name)
