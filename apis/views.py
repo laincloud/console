@@ -1370,8 +1370,8 @@ class ConfigApi:
                 app, base_image, config_tag, len(config_list))
         except Exception as e:
             if get_secret_files_bypass(app, pg_name):
-                logger.info(str(e))
-                logger.info("secret_files_bypass is True, ignore")
+                logger.warn(str(e))
+                logger.warn("secret_files_bypass is True, ignore")
                 return base_image
             else:
                 raise e
