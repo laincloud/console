@@ -28,8 +28,7 @@ class OpLog(models.Model):
     time = models.DateTimeField()
     message = models.CharField(max_length=512)
 
-
-def add_oplog(user, op, app, app_version, message):
+def _add_oplog(user, op, app, app_version, message):
     try:
         time = timezone.localtime(timezone.now())
         oplog = OpLog(user=user, op=op, app=app,
@@ -37,3 +36,9 @@ def add_oplog(user, op, app, app_version, message):
         oplog.save()
     except:
         pass
+
+def add_oplog(user, op, app, app_version, message):
+    from threading import Thread
+    t = Thread(target=_add_oplog, args=(user, op, app, app_version, message))
+    t.start()
+
