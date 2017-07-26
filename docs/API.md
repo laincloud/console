@@ -66,6 +66,24 @@ curl /api/v1/repos/:appName/maintainers/:username/
 curl -X DELETE /api/v1/repos/:appName/maintainers/:username/
 ```
 
+### `/api/v1/repos/:appName/details/`
+
+1. `GET`
+
+	>获取 App 详细信息 包括绑定的giturl， 当前部署的meta-version
+```sh
+curl /api/v1/repos/:appName/details/
+```
+
+### `/api/v1/repos/:appName/push/`
+
+1. `POST`
+
+	>notify console pushed image
+```sh
+curl -XPOST /api/v1/repos/:appName/push/
+```
+
 
 ### `/api/v1/apps/`
 

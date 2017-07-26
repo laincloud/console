@@ -729,22 +729,22 @@ class AppApi:
         return cls.deal_with_appname(appname, handle)
 
     @classmethod
-    def post_image_push(cls, appname, authors):
-        commitid_len = 40
-
+    def post_image_push(cls, appname, authors, commits):
         def handle(app):
+            try:
+                app.check_latest_giturl()
+            except InvalidLainYaml, e:
+                return (400, None, '%s' % e, reverse('api_image_push', kwargs={'appname': appname}))
+            commitid_len = 40
             datas = {
                 "appname": appname,
-                "image": app.meta_version,
+                "commits": commits,
+                "operator": AuthApi.operater,
                 "lastid": app.meta_version[-commitid_len:],
                 "nextid": app.latest_meta_version[-commitid_len:],
                 "giturl": app.giturl,
                 "authors": authors,
             }
-            try:
-                app.check_latest_giturl()
-            except InvalidLainYaml, e:
-                return (400, None, '%s' % e, reverse('api_image_push', kwargs={'appname': appname}))
             image_push_notify(datas)
             return (200, None, 'ok', reverse('api_image_push', kwargs={'appname': appname}))
         return cls.deal_with_appname(appname, handle)
@@ -1350,8 +1350,10 @@ class ConfigApi:
             for proc in app.lain_config.procs.values():
                 if "%s.%s.%s" % (app.appname, proc.type.name, proc.name) == pg_name:
                     return proc
+
         def get_secret_files_bypass(app, pg_name):
             return get_proc(app, pg_name).secret_files_bypass
+
         def get_defined_secret_files(app, pg_name):
             return get_proc(app, pg_name).secret_files
 

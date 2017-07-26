@@ -400,10 +400,11 @@ def api_image_push_post(request, appname):
     try:
         options = json.loads(request.body)
         authors = options['authors']
+        commits = options['commits']
     except Exception:
-        return render_json_response(400, 'proc', None, 'invalid request: should be json body with authors(array string)', reverse('api_docs'))
+        return render_json_response(400, 'proc', None, 'invalid request: should be json body as {"authors": [string], "commits": [{"id": string, "message": string}]}', reverse('api_docs'))
     status_code, view_object, msg, url = AppApi.post_image_push(
-        appname, authors)
+        appname, authors, commits)
     return render_json_response(status_code, 'image_push', view_object, msg, url)
 
 
