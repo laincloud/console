@@ -5,6 +5,7 @@ build:
   prepare:
     version: "20170612"
     script:
+      - yum install -y yum-plugin-ovl
       - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
       - git clone --depth=1 https://github.com/golang/net.git $GOPATH/src/golang.org/x/net

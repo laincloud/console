@@ -120,7 +120,7 @@ def _get_registry_access_header(app, registry):
         jwt = Authorize.get_jwt_with_appname(app)
         header = {'Authorization': 'Bearer %s' % jwt}
     else:
-        header = ''
+        header = {}
     return header
 
 
@@ -169,6 +169,28 @@ def get_meta_from_registry(app, meta_version, registry=None):
         if cli and isinstance(c, dict) and c.get('Id'):
             cli.remove_container(container=c.get('Id'), v=True)
     return y
+
+
+def get_image_config_from_registry(app, meta_version, registry=None):
+    logger.debug("ready get meta version %s for app %s from registry" %
+                 (meta_version, app))
+    meta_version = normalize_meta_version(meta_version)
+    if not registry:
+        registry = PRIVATE_REGISTRY
+
+    headers = _get_registry_access_header(app, registry)
+    headers['Accept'] = 'application/vnd.docker.distribution.manifest.v2+json'
+    url = 'http://%s/v2/%s/manifests/release-%s' % (registry, app, meta_version)
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        raise Exception("requests.get(%s, %s) failed, resp: %s" % (url, headers, resp))
+    config_digest = resp.json()['config']['digest']
+    headers = _get_registry_access_header(app, registry)
+    url = 'http://%s/v2/%s/blobs/%s' % (registry, app, config_digest)
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        raise Exception("requests.get(%s, %s) failed, resp: %s" % (url, headers, resp))
+    return resp.json()['config']
 
 
 def shell(cmd):
