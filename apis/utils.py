@@ -211,10 +211,14 @@ class CalicoException(Exception):
 
 def docker_network_exists(name):
     cli = get_docker_client(DOCKER_BASE_URL)
-    if len(cli.networks(names=[name])) == 0:
-        return False
-    else:
-        return True
+    try:
+        cli.inspect_network(name)
+    except docker.errors.APIError as e:
+        # Forward compatibility for some exceptions raise.
+        if e.status_code == 404:
+            return False
+        raise e
+    return True
 
 
 def docker_network_add(name):
