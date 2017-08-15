@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/laincloud/console.svg?branch=master)](https://travis-ci.org/laincloud/console)
 [![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/laincloud/console/branch/master/graph/badge.svg)](https://codecov.io/gh/laincloud/console)
 
 ## 基本介绍
 LAIN Console 组件属于 LAIN 集群的 layer1 组件，是 sa/op/dev/testing 使用 LAIN 的控制台。LAIN Console 使用 Django 搭建，主要提供的功能包括：

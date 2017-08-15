@@ -27,6 +27,7 @@ test:
   script:
     - mkdir /lain/logs/
     - make pylint test
+    - CONSOLE_DEBUG=1 py.test  --cov=.
 
 web:
   cmd: ./archon.sh
