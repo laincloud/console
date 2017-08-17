@@ -16,6 +16,7 @@ from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client
 from log import logger, op_logger
 from oplog.models import add_oplog
+from git.client import fetch_project_commits
 
 
 def render_op_result(op_result):
@@ -735,16 +736,30 @@ class AppApi:
                 app.check_latest_giturl()
             except InvalidLainYaml, e:
                 return (400, None, '%s' % e, reverse('api_image_push', kwargs={'appname': appname}))
+
+            uniq_authors = authors
+            total_commits = commits
+            if authors is None:
+                timestamp_len = 10
+                commits_info = fetch_project_commits(
+                    app.giturl, int(app.meta_version[:timestamp_len]))
+                if commits_info is not None:
+                    uniq_authors, total_commits = commits_info
+                else:
+                    return (400, None, 'Fetch commmits information failed', reverse('api_docs'))
+            if len(total_commits) == 0 or len(uniq_authors) == 0:
+                return (400, None, 'Nothing Changed', reverse('api_docs'))
             commitid_len = 40
             datas = {
                 "appname": appname,
-                "commits": commits,
+                "commits": total_commits,
                 "operator": AuthApi.operater,
                 "lastid": app.meta_version[-commitid_len:],
                 "nextid": app.latest_meta_version[-commitid_len:],
                 "giturl": app.giturl,
-                "authors": authors,
+                "authors": uniq_authors,
             }
+            logger.info('notify datas:%s', str(datas))
             image_push_notify(datas)
             return (200, None, 'ok', reverse('api_image_push', kwargs={'appname': appname}))
         return cls.deal_with_appname(appname, handle)

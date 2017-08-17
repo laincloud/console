@@ -8,6 +8,7 @@ from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, Strea
 from apis.views import is_deployable
 from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
+from log import logger
 
 
 def permission_required(permission=None):
@@ -397,12 +398,17 @@ def api_detail_get(request, appname):
 
 @permission_required('maintain')
 def api_image_push_post(request, appname):
-    try:
-        options = json.loads(request.body)
-        authors = options['authors']
-        commits = options['commits']
-    except Exception:
-        return render_json_response(400, 'proc', None, 'invalid request: should be json body as {"authors": [string], "commits": [{"id": string, "message": string}]}', reverse('api_docs'))
+    authors = None
+    commits = None
+    if request.body != '':
+        try:
+            options = json.loads(request.body)
+            if options.get('authors') is not None and options.get('commits') is not None:
+                authors = options['authors']
+                commits = options['commits']
+        except Exception as e:
+            logger.error(
+                'loads api_image_push_post body failed with error %s' % str(e))
     status_code, view_object, msg, url = AppApi.post_image_push(
         appname, authors, commits)
     return render_json_response(status_code, 'image_push', view_object, msg, url)
