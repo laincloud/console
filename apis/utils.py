@@ -215,7 +215,8 @@ def docker_network_exists(name):
         cli.inspect_network(name)
     except docker.errors.APIError as e:
         # Forward compatibility for some exceptions raise.
-        if e.status_code == 404:
+        # Fixed bug for docker 2.1.0 e.status_code (ugly)
+        if e.response is not None and e.response.status_code == 404:
             return False
         raise e
     return True
