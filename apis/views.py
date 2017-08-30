@@ -742,7 +742,7 @@ class AppApi:
             if authors is None:
                 timestamp_len = 10
                 commits_info = fetch_project_commits(
-                    app.giturl, int(app.meta_version[:timestamp_len]))
+                    app.giturl, int(app.meta_version[:timestamp_len]), int(app.latest_meta_version[:timestamp_len]))
                 if commits_info is not None:
                     uniq_authors, total_commits = commits_info
                 else:
