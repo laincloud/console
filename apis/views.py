@@ -15,7 +15,7 @@ from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
 from raven.contrib.django.raven_compat.models import client
 from log import logger, op_logger
-from oplog.models import add_oplog
+from oplog.utils import add_oplog
 
 
 def render_op_result(op_result):
