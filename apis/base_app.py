@@ -177,16 +177,17 @@ class BaseApp:
             return None
         try:
             config = LainConf()
-            image_config = get_image_config_from_registry(self.appname, self.meta_version)
+            image_config = get_image_config_from_registry(
+                self.appname, self.meta_version)
             config.load(self.meta, self.meta_version, self.default_image,
-                    image_config=image_config, registry=PRIVATE_REGISTRY,
-                    domains=get_domains())
+                        image_config=image_config, registry=PRIVATE_REGISTRY,
+                        domains=get_domains())
             return config
         except Exception as e:
             logger.error('_get_lain_config() failed, error: %s' % e)
             config = LainConf()
             config.load(self.meta, self.meta_version, self.default_image,
-                    registry=PRIVATE_REGISTRY, domains=get_domains())
+                        registry=PRIVATE_REGISTRY, domains=get_domains())
             return config
 
     @property
@@ -350,6 +351,8 @@ class BaseApp:
             giturl = "http://" + giturl
         if update and self.update_git_url(giturl):
             return
+        if self.giturl == '':
+            raise InvalidLainYaml("No Giturl bound")
         if giturl != self.giturl:
             raise InvalidLainYaml(
                 "app giturl '%s' doesn't match with bound url '%s'" % (giturl, self.giturl))

@@ -19,3 +19,4 @@ class DoesNotExist(Exception):
 
 class NoAvailableImages(Exception):
     pass
+

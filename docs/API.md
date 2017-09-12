@@ -162,3 +162,23 @@ curl -X DELETE /api/v1/apps/:appName/procs/:procName/
 ```sh
 curl /api/v1/resources/:resourceName/instances/
 ```
+
+### `/api/v1/notify/:notify_type`
+
+1. `GET`
+>获取 notify_type 所有 notifies 列表
+```sh
+curl /api/v1/notify/imagepush
+```
+
+2. `POST`
+>向 notify_type 注册 notifier
+```sh
+curl -XPOST -H 'Content-type: application/json' /api/v1/notify/imagepush/ -d '{"notify_url": "http://lxcmond.lain:3001/api/v1/imagepush"}'
+```
+
+2. `DELETE`
+>向 notify_type 注销 notifier
+```sh
+curl -XDELETE -H 'Content-type: application/json' /api/v1/notify/imagepush/ -d '{"notify_url": "http://lxcmond.lain:3001/api/v1/imagepush"}'
+```

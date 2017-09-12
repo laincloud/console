@@ -180,16 +180,19 @@ def get_image_config_from_registry(app, meta_version, registry=None):
 
     headers = _get_registry_access_header(app, registry)
     headers['Accept'] = 'application/vnd.docker.distribution.manifest.v2+json'
-    url = 'http://%s/v2/%s/manifests/release-%s' % (registry, app, meta_version)
+    url = 'http://%s/v2/%s/manifests/release-%s' % (
+        registry, app, meta_version)
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
-        raise Exception("requests.get(%s, %s) failed, resp: %s" % (url, headers, resp))
+        raise Exception("requests.get(%s, %s) failed, resp: %s" %
+                        (url, headers, resp))
     config_digest = resp.json()['config']['digest']
     headers = _get_registry_access_header(app, registry)
     url = 'http://%s/v2/%s/blobs/%s' % (registry, app, config_digest)
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
-        raise Exception("requests.get(%s, %s) failed, resp: %s" % (url, headers, resp))
+        raise Exception("requests.get(%s, %s) failed, resp: %s" %
+                        (url, headers, resp))
     return resp.json()['config']
 
 
@@ -215,7 +218,8 @@ def docker_network_exists(name):
         cli.inspect_network(name)
     except docker.errors.APIError as e:
         # Forward compatibility for some exceptions raise.
-        if e.status_code == 404:
+        # Fixed bug for docker 2.1.0 e.status_code (ugly)
+        if e.response is not None and e.response.status_code == 404:
             return False
         raise e
     return True

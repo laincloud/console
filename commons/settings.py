@@ -75,3 +75,6 @@ CONSOLE_NOTIFIES_PREFIX = environ.get(
 IMAGE_PUSH_KEY = environ.get(
     "IMAGE_PUSH_KEY", "image_push")
 NOTIFIES_TYPES = {'imagepush': IMAGE_PUSH_KEY}
+
+# git configs
+GITLAB_TOKEN = environ.get("GITLAB_TOKEN", "1234567890")
