@@ -953,6 +953,31 @@ class ProcApi:
                     reverse('api_procs', kwargs={'appname': appname}))
 
     @classmethod
+    def get_proc_history(cls, appname, procname, instance, options=None):
+        try:
+            app = App.get_or_none(appname)
+            if not app.is_reachable():
+                return (404, None,
+                        'app with appname %s has not been deployd\n' % appname,
+                        reverse('api_apps'))
+            status_history = app.podgroup_status_history(procname, instance)
+            if status_history:
+                return (200, status_history,
+                        '', reverse('api_proc_history',
+                                    kwargs={'appname': appname, 'procname': procname, 'instance': instance}))
+            else:
+                return (200, [],
+                        'proc %s do not exists' % (procname),
+                        reverse('api_proc_history',
+                                kwargs={'appname': appname, 'procname': procname, 'instance': instance}))
+        except Exception, e:
+            client.captureException()
+            return (500, None,
+                    'fatal error when get app %s proc %s:\n%s\nplease contact with admin of lain\n' % (
+                        appname, procname, e),
+                    reverse('api_procs', kwargs={'appname': appname}))
+
+    @classmethod
     def update_app_proc(cls, appname, procname, options):
         def verify_options(options):
             num_instances_flag = None
@@ -1419,6 +1444,14 @@ class ConfigApi:
             Config.overlap_config_image(
                 app.appname, config_tag, config_layer_count, target_repo, target_tag)
         return "%s:%s-%s" % (target_repo, target_tag, config_tag)
+
+    @classmethod
+    def list_ports(cls):
+        resp = Streamrouter.get_streamrouter_ports()
+        if resp == None:
+            return (400, None, '', reverse('api_streamrouter'))
+        else:
+            return (200, resp, '', reverse('api_streamrouter'))
 
 
 class StreamrouterApi:

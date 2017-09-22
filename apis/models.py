@@ -116,6 +116,28 @@ class App(BaseApp):
                     return None
         return None
 
+    def podgroup_status_history(self, procname, instance):
+        for pg in self.app_spec.PodGroups:
+            if pg.Name.split('.')[2] == procname:
+                r = self.default_deploy.get_podhistory(pg.Name, int(instance))
+                if r.status_code < 400:
+                    status_histories = r.json()
+                    for history in status_histories:
+                        image, node = history['from'].split(' ')
+                        history['image'] = image.split('/')[1]
+                        history['node'] = node[5:] # len('node:')
+                        del history['from']
+                    status_histories.reverse()
+                    return {
+                        'Name': pg.Name,
+                        'Instance': instance,
+                        'StatusHistory': status_histories
+                    }
+                else:
+                    logger.warning("fail getting PodGroup status history: %s" % r.content)
+                    return None
+        return None
+
     def dependency_status(self, name):
         r = self.default_deploy.get_dependency(name)
         if r.status_code < 400:

@@ -210,6 +210,23 @@ def api_proc(request, appname, procname):
         _invalid_request_method('proc', request.method)
 
 
+def api_proc_history(request, appname, procname, instance):
+    if request.method == 'GET':
+        return api_proc_history_get(request, appname, procname, instance)
+    else:
+        _invalid_request_method('proc history', request.method)
+
+
+@permission_required('maintain')
+def api_proc_history_get(request, appname, procname, instance):
+    try:
+        status_code, view_object, msg, url = ProcApi.get_proc_history(
+            appname, procname, instance)
+        return render_json_response(status_code, 'proc', view_object, msg, url)
+    except Exception:
+        return render_json_response(400, 'proc history', None, 'invalid request: should be json body with procname(detail string) instance(int)', reverse('api_docs'))
+
+
 @permission_required('maintain')
 @deployd_required
 def api_proc_high_permit(request, appname, procname):
