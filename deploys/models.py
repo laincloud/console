@@ -34,6 +34,9 @@ class Deploy:
     def remove_podgroup(self, podgroup_name):
         return deploys.utils.remove_podgroup(podgroup_name, self.apiserver)
 
+    def operate_podgroup(self, podgroup_name, instance, operation):
+        return deploys.utils.operate_podgroup(podgroup_name, instance, operation, self.apiserver)
+
     def patch_podgroup_instance(self, podgroup_name, num_instances):
         return deploys.utils.patch_podgroup_instance(podgroup_name, num_instances, self.apiserver)
 

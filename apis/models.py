@@ -125,7 +125,7 @@ class App(BaseApp):
                     for history in status_histories:
                         image, node = history['from'].split(' ')
                         history['image'] = image.split('/')[1]
-                        history['node'] = node[5:] # len('node:')
+                        history['node'] = node[5:]  # len('node:')
                         del history['from']
                     status_histories.reverse()
                     return {
@@ -134,7 +134,8 @@ class App(BaseApp):
                         'StatusHistory': status_histories
                     }
                 else:
-                    logger.warning("fail getting PodGroup status history: %s" % r.content)
+                    logger.warning(
+                        "fail getting PodGroup status history: %s" % r.content)
                     return None
         return None
 
@@ -545,6 +546,11 @@ class App(BaseApp):
         logger.info("remove podgroup %s of app %s " %
                     (podgroup_name, self.appname))
         return self.default_deploy.remove_podgroup(podgroup_name)
+
+    def podgroup_operate(self, podgroup_name, optype, instance):
+        logger.info("operate podgroup %s of app %s " %
+                    (podgroup_name, self.appname))
+        return self.default_deploy.operate_podgroup(podgroup_name)
 
     def dependency_register(self, service_app, service_appname, dependency_pod_name):
         # service may not been deployed yet, so may need force generate the

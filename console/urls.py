@@ -17,6 +17,8 @@ urlpatterns = [
         'console.views.api_procs', name='api_procs'),
     url(r'^(?:api/)?v1/apps/(?P<appname>[^/]+)/procs/(?P<procname>[^/]+)/$',
         'console.views.api_proc', name='api_proc'),
+    url(r'^(?:api/)?v1/apps/(?P<appname>[^/]+)/procs/(?P<procname>[^/]+)/(?P<operation>[^/]+)/$',
+        'console.views.api_proc_op', name='api_proc_op'),
 
     url(r'^(?:api/)?v1/apps/(?P<appname>[^/]+)/proc/(?P<procname>[^/]+)/instance/(?P<instance>[^/]+)/histories/$',
         'console.views.api_proc_history', name='api_proc_history'),

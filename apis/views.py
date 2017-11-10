@@ -1129,6 +1129,57 @@ class ProcApi:
                         appname, procname, e),
                     reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
 
+    @classmethod
+    def operate_proc(cls, appname, procname, instance, operation, options=None):
+        try:
+            app = App.get_or_none(appname)
+            if not app.is_reachable():
+                return (404, None,
+                        'app with appname %s has not been deployd\n' % appname,
+                        reverse('api_apps'))
+            proc, pg_status = app.proc_and_pg_status(procname)
+            if proc is None:
+                return (404, None,
+                        'no such proc %s in app %s' % (procname, appname),
+                        reverse('api_procs', kwargs={'appname': appname}))
+            if pg_status:
+                if instance != 0 {
+                    pods = pg_status['Status']['Pods']
+                    if instance <= len(pods):
+                        container_name = pods[instance - 1]['Containers'][0]['Runtime']['Name']
+                    else:
+                        return (404, None, 'no such proc %s instance %d, in app %s' % (procname, instance, appname),
+                                reverse('api_procs', kwargs={'appname': appname}))
+                }
+                if container_name:
+                    add_oplog(AuthApi.operater, operation.upper(), appname, "",
+                              "%s container %s" % (operation, container_name))
+                else:
+                    add_oplog(AuthApi.operater, operation.upper(), appname, "",
+                              "%s proc %s" % (operation, procname))
+
+                podgroup_name = "%s.%s.%s" % (
+                    appname, proc.type.name, proc.name)
+                result = app.podgroup_operate(podgroup_name)
+                if result.status_code < 400:
+                    return (202, ProcApi.render_proc_data(appname, proc),
+                            render_op_result_to_msg(result),
+                            reverse('api_procs', kwargs={'appname': appname}))
+                else:
+                    return (500, ProcApi.render_proc_data(appname, proc),
+                            render_op_result_to_msg(result),
+                            reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
+            else:
+                return (400, ProcApi.render_proc_data(appname, proc),
+                        'proc %s exists but not deployed\nplease deploy it first\n' % (
+                            procname),
+                        reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
+        except Exception, e:
+            client.captureException()
+            return (500, None,
+                    'fatal error when delete app %s proc %s:\n%s\nplease contact with admin of lain\n' % (
+                        appname, procname, e),
+                    reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
 
 '''
 这个类响应 console.views 关于 maintainer 的所有调用

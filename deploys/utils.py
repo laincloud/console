@@ -23,14 +23,23 @@ def get_podgroup(podgroup_name, apiserver):
         apiserver, podgroup_name)
     return send_request("GET", url, None, None)
 
+
 def get_podhistory(podgroup_name, instance, apiserver):
     url = "%s/api/cntstatushistory?name=%s&instance=%d" % (
         apiserver, podgroup_name, instance)
     return send_request("GET", url, None, None)
 
+
 def remove_podgroup(podgroup_name, apiserver):
     url = "%s/api/podgroups?name=%s" % (apiserver, podgroup_name)
     return send_request("DELETE", url, None, None)
+
+
+def operate_podgroup(podgroup_name, instance, operation, apiserver):
+    url = "%s/api/podgroups?name=%s&instance=%s&cmd=operation&optype=%s" % (
+        apiserver, podgroup_name, instance, operation
+    )
+    return send_request("POST", url, None, None)
 
 
 def patch_podgroup_instance(podgroup_name, num_instances, apiserver):
