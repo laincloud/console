@@ -36,10 +36,10 @@ def remove_podgroup(podgroup_name, apiserver):
 
 
 def operate_podgroup(podgroup_name, instance, operation, apiserver):
-    url = "%s/api/podgroups?name=%s&instance=%s&cmd=operation&optype=%s" % (
+    url = "%s/api/podgroups?name=%s&instance=%d&cmd=operation&optype=%s" % (
         apiserver, podgroup_name, instance, operation
     )
-    return send_request("POST", url, None, None)
+    return send_request("PATCH", url, None, None)
 
 
 def patch_podgroup_instance(podgroup_name, num_instances, apiserver):

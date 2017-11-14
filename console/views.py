@@ -210,13 +210,6 @@ def api_proc(request, appname, procname):
         _invalid_request_method('proc', request.method)
 
 
-def api_proc_op(request, appname, procname, operation):
-    if request.method == 'POST':
-        return api_proc_operate(request, appname, procname, operation)
-    else:
-        _invalid_request_method('proc', request.method)
-
-
 def api_proc_history(request, appname, procname, instance):
     if request.method == 'GET':
         return api_proc_history_get(request, appname, procname, instance)
@@ -244,10 +237,16 @@ def api_proc_high_permit(request, appname, procname):
     elif request.method == 'PATCH':
         try:
             options = json.loads(request.body)
+            operation = options.get('operation', 'schedule')
+            if operation == 'schedule':
+                status_code, view_object, msg, url = ProcApi.update_app_proc(
+                    appname, procname, options)
+            else:
+                status_code, view_object, msg, url = ProcApi.operate_proc(
+                    appname, procname, operation, options)
         except Exception:
             return render_json_response(400, 'proc', None, 'invalid request: should be json body with num_instances(integer) or cpu(integer) or memory(str)', reverse('api_docs'))
-        status_code, view_object, msg, url = ProcApi.update_app_proc(
-            appname, procname, options)
+
         return render_json_response(status_code, 'proc', view_object, msg, url)
 
 
@@ -257,17 +256,6 @@ def api_proc_get(request, appname, procname):
         appname, procname)
     return render_json_response(status_code, 'proc', view_object, msg, url)
 
-
-@permission_required('maintain')
-@deployd_required
-def api_proc_operate(request, appname, procname, operation):
-    try:
-        options = json.loads(request.body)
-        instance = int(options.get('instance', 0))
-        status_code, view_object, msg, url = ProcApi.operate_proc(appname, procname, operation, instance)
-        return render_json_response(status_code, 'proc', view_object, msg, url)
-    except Exception:
-        return render_json_response(400, 'proc', None, 'invalid request: instance should be integer', reverse('api_docs'))
 
 def api_repos(request):
     if request.method == 'POST':

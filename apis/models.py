@@ -547,10 +547,10 @@ class App(BaseApp):
                     (podgroup_name, self.appname))
         return self.default_deploy.remove_podgroup(podgroup_name)
 
-    def podgroup_operate(self, podgroup_name, optype, instance):
+    def podgroup_operate(self, podgroup_name, instance, optype):
         logger.info("operate podgroup %s of app %s " %
                     (podgroup_name, self.appname))
-        return self.default_deploy.operate_podgroup(podgroup_name)
+        return self.default_deploy.operate_podgroup(podgroup_name, instance, optype)
 
     def dependency_register(self, service_app, service_appname, dependency_pod_name):
         # service may not been deployed yet, so may need force generate the
