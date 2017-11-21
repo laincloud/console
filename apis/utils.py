@@ -223,9 +223,21 @@ def get_current_time():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 
+def orc_convert_time_from_deployd(d_time):
+    c_times = d_time.split("T")
+    if len(c_times) <= 1:
+        return d_time
+    else:
+        return "%s %s" % (c_times[0], c_times[1].split('.')[0])
+
+
 def convert_time_from_deployd(d_time):
     t_time = parse_datetime(d_time)
     tzchina = timezone('Asia/Shanghai')
     utc = timezone('UTC')
     t_time = t_time.replace(tzinfo=utc).astimezone(tzchina)
-    return t_time.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        return t_time.strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        logger.error("strftime error:%s d_time:%s", str(e), d_time)
+    return orc_convert_time_from_deployd(t_time)
