@@ -18,6 +18,9 @@ urlpatterns = [
     url(r'^(?:api/)?v1/apps/(?P<appname>[^/]+)/procs/(?P<procname>[^/]+)/$',
         'console.views.api_proc', name='api_proc'),
 
+    url(r'^(?:api/)?v1/apps/(?P<appname>[^/]+)/procs/(?P<procname>[^/]+)/instance/(?P<instance>[^/]+)/histories/$',
+        'console.views.api_proc_history', name='api_proc_history'),
+
     # authroze service for console ui
     url(r'^(?:api/)?v1/authorize/$',
         'console.views.api_authorize', name='api_authorize'),

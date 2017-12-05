@@ -20,6 +20,8 @@ from commons.settings import (PRIVATE_REGISTRY, DOCKER_BASE_URL, DEBUG,
 from log import logger
 from .calico import (calico_profile_rule_add)
 import pycalico.datastore_datatypes
+from django.utils.dateparse import parse_datetime
+from pytz import timezone
 
 
 def read_from_etcd(key):
@@ -221,9 +223,21 @@ def get_current_time():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 
-def convert_time_from_deployd(d_time):
+def orc_convert_time_from_deployd(d_time):
     c_times = d_time.split("T")
     if len(c_times) <= 1:
         return d_time
     else:
         return "%s %s" % (c_times[0], c_times[1].split('.')[0])
+
+
+def convert_time_from_deployd(d_time):
+    t_time = parse_datetime(d_time)
+    tzchina = timezone('Asia/Shanghai')
+    utc = timezone('UTC')
+    t_time = t_time.replace(tzinfo=utc).astimezone(tzchina)
+    try:
+        return t_time.strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        logger.error("strftime error:%s d_time:%s", str(e), d_time)
+    return orc_convert_time_from_deployd(t_time)
