@@ -17,6 +17,8 @@ build:
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
   script:
+    - mkdir -p /root/.pip
+    - cp -f pip.conf /root/.pip/pip.conf
     - cd $(npm root -g)/npm && npm install fs-extra && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js # fix npm error
     - cd $GOPATH/src/github.com/laincloud/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/ # note docker may use cache, you should delete the old image
     - unzip -o /lain/app/archon-0.1.zip
