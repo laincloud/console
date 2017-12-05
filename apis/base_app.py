@@ -11,7 +11,6 @@ from .utils import (
     normalize_meta_version,
     search_images_from_registry,
     get_meta_from_registry,
-    get_image_config_from_registry,
     read_from_etcd,
     delete_from_etcd,
     set_value_to_etcd,
@@ -175,20 +174,10 @@ class BaseApp:
     def _get_lain_config(self):
         if self.meta == '' or self.meta_version == '':
             return None
-        try:
-            config = LainConf()
-            image_config = get_image_config_from_registry(
-                self.appname, self.meta_version)
-            config.load(self.meta, self.meta_version, self.default_image,
-                        image_config=image_config, registry=PRIVATE_REGISTRY,
-                        domains=get_domains())
-            return config
-        except Exception as e:
-            logger.error('_get_lain_config() failed, error: %s' % e)
-            config = LainConf()
-            config.load(self.meta, self.meta_version, self.default_image,
-                        registry=PRIVATE_REGISTRY, domains=get_domains())
-            return config
+        config = LainConf()
+        config.load(self.meta, self.meta_version, self.default_image,
+                    registry=PRIVATE_REGISTRY, domains=get_domains())
+        return config
 
     @property
     def app_spec(self):

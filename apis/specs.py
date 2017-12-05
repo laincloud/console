@@ -112,8 +112,8 @@ class ContainerSpec(ImSpec):
     Volumes = []
     SystemVolumes = []
     CloudVolumes = []
-    Command = []
-    Entrypoint = []
+    Command = None
+    Entrypoint = None
     CpuLimit = 0
     MemoryLimit = 0
     Expose = 0
@@ -471,14 +471,8 @@ def render_container_spec_from_json(app_name, spec_json):
         cloud_volumes = []
     c.CloudVolumes = [render_cloud_volumes_spec_from_json(
         cv) for cv in cloud_volumes]
-    command = spec_json.get('Command')
-    if not command:
-        command = []
-    c.Command = command
-    entrypoint = spec_json.get('entrypoint')
-    if not entrypoint:
-        entrypoint = []
-    c.Entrypoint = entrypoint
+    c.Command = spec_json.get('Command')
+    c.Entrypoint = spec_json.get('Entrypoint')
     c.CpuLimit = spec_json['CpuLimit']
     c.MemoryLimit = spec_json['MemoryLimit']
     c.Expose = spec_json['Expose'] if spec_json['Expose'] else 0

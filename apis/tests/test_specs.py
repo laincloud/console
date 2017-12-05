@@ -48,7 +48,7 @@ def test_ContainerSpec_smoke():
     assert s.CreateAt is None
     assert s.Version == 0
     assert s.Image == ""
-    assert s.Command == []
+    assert s.Command == None
     assert s.LogConfig is None
 
 
