@@ -240,4 +240,4 @@ def convert_time_from_deployd(d_time):
         return t_time.strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:
         logger.error("strftime error:%s d_time:%s", str(e), d_time)
-    return orc_convert_time_from_deployd(t_time)
+    return orc_convert_time_from_deployd(d_time)
