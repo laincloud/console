@@ -3,7 +3,7 @@
 environ=$LAIN_DOMAIN
 
 # specify the client id here
-source ./config
+source /lain/app/config
 
 if [ $console_api_scheme == "https" ]; then
 	ws_scheme="wss";

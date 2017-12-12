@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # specify the client id, client secret and sso server here
-source ./config
+source /lain/app/config
 
 export SSO_CLIENT_ID=$client_id
 export SSO_CLIENT_SECRET=$client_sec
@@ -18,4 +18,4 @@ export CONSOLE_SENTRY_DSN=$console_sentry_dsn
 export GITLAB_TOKEN=$gitlab_token
 
 mkdir -p /lain/logs
-exec gunicorn -w 3 -b 0.0.0.0:8000 --preload --error-logfile /lain/logs/error.log --access-logfile /lain/logs/access.log console.wsgi 
+exec gunicorn -w 3 -b 0.0.0.0:8000 --preload --error-logfile /lain/logs/error.log --access-logfile /lain/logs/access.log --pythonpath /lain/app console.wsgi
