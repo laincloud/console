@@ -39,80 +39,61 @@ def render_op_result_to_msg(op_result):
 
 
 def render_podgroup_deploy_result_to_msg(deploy_result):
-    msg = '    OK: %s\n' % deploy_result.get('OK', False)
-    msg += '    podgroup_result:\n'
+    msg = 'proc deploy result:\n'
     for pgname, pgr in deploy_result['podgroup_result'].iteritems():
-        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
-    msg += '    services_need_deploy:\n'
-    for pgname in deploy_result['services_need_deploy']:
-        msg += '    %s\n' % (pgname)
+        msg += '    %s\n' % ( render_op_result_to_msg(pgr))
+    services = deploy_result['services_need_deploy']
+    if services is not None and len(services) > 0:
+        msg += '    services_need_deploy:\n'
+        for pgname in services:
+            msg += '    %s\n' % (pgname)
     return msg
 
 
 def render_basic_app_deploy_result_to_msg(deploy_result):
     if not deploy_result:
-        return 'OK: False \n app deploy failed!'
-    msg = 'OK: %s\n' % deploy_result.get('OK', False)
-
-    msg += '--proc_deploy_results--\n'
+        return 'app deploy failed!'
+    msg = '\n-------proc deploy results------ \n'
     proc_results = deploy_result['proc_results']
-    msg += '  OK: %s \n' % proc_results.get('OK', False)
-    msg += '  proc_deploy_success:\n'
-    for pgname, pg_result in proc_results['proc_deploy_success'].iteritems():
-        msg += '    %s\n%s\n' % (pgname,
-                                 render_podgroup_deploy_result_to_msg(pg_result))
-    msg += '  proc_deploy_failed:\n'
-    for pgname, pg_result in proc_results['proc_deploy_failed'].iteritems():
-        msg += '    %s\n%s\n' % (pgname,
-                                 render_podgroup_deploy_result_to_msg(pg_result))
+    successed = proc_results['proc_deploy_success']
+    if successed is not None and len(successed) > 0:
+        msg += 'procs in below are successed:\n'
+        for pgname, pg_result in successed.iteritems():
+            msg += '    %s\n%s\n' % (pgname,
+                                     render_podgroup_deploy_result_to_msg(pg_result))
+    failed = proc_results['proc_deploy_failed']
+    if failed is not None and len(failed) > 0:
+        msg += 'procs in below are failed:\n'
+        for pgname, pg_result in failed.iteritems():
+            msg += '    %s\n%s\n' % (pgname,
+                                     render_podgroup_deploy_result_to_msg(pg_result))
     msg += '\n'
-
-    msg += '--portal_depoy_results--\n'
-    portal_results = deploy_result['portal_results']
-    msg += '  OK: %s \n' % portal_results.get('OK', False)
-    msg += '  portals_register_success:\n'
-    for pgname, pg_result in portal_results['portals_register_success'].iteritems():
-        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pg_result))
-    msg += '  portals_register_failed:\n'
-    for pgname, pg_result in portal_results['portals_register_failed'].iteritems():
-        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pg_result))
-    msg += '  portals_update_success:\n'
-    for pgname, pg_result in portal_results['portals_update_success'].iteritems():
-        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pg_result))
-    msg += '  portals_update_failed:\n'
-    for pgname, pg_result in portal_results['portals_update_failed'].iteritems():
-        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pg_result))
-    msg += '\n'
-
-    useless_procs_remove_results = deploy_result.get(
-        'useless_procs_remove_results')
-    if useless_procs_remove_results:
-        msg += '--useless_procs_remove_results--\n'
-        msg += render_basic_app_remove_result_to_msg(
-            useless_procs_remove_results)
     return msg
 
 
 def render_resource_deploy_result_to_msg(deploy_result):
-    msg = 'OK: %s\n' % deploy_result.get('OK', False)
-    msg += '  resources_need_deploy:\n'
-    for rename in deploy_result['resources_need_deploy']:
-        msg += '    %s\n' % (rename)
+    msg = ''
+    resources = deploy_result['resources_need_deploy']
+    if resources is not None and len(resources) > 0:
+        msg += 'resources need deploy:\n'
+        for rename in resources:
+            msg += '  %s\n' % (rename)
 
-    msg += '  resouce_instances_deploy_results:\n'
     instance_results = deploy_result['instances_deploy_results']
-    for riname, ri_result in instance_results.iteritems():
-        msg += '%s\n%s\n' % (riname,
-                             render_basic_app_deploy_result_to_msg(ri_result))
+    if instance_results is not None and len(instance_results) > 0:
+        msg += '  resouce instances deploy results:\n'
+        for riname, ri_result in instance_results.iteritems():
+            msg += '    %s\n%s\n' % (riname,
+                                     render_basic_app_deploy_result_to_msg(ri_result))
     return msg
 
 
 def render_app_deploy_result_to_msg(deploy_result):
-    msg = 'OK: %s\n' % deploy_result.get('OK', False)
+    msg = ''
     has_resource = deploy_result['dp_resources_deploy_results']['has_resource']
     if has_resource:
         resource_results = deploy_result['dp_resources_deploy_results']
-        msg += 'dp_resource_instance_deploy_results:\n'
+        msg += 'depended resource instance deploy results:\n'
         msg += '%s\n' % (render_resource_deploy_result_to_msg(resource_results))
 
     app_results = deploy_result['app_deploy_results']
@@ -126,28 +107,26 @@ def render_podgroup_remove_result_to_msg(deploy_result):
 
 
 def render_basic_app_remove_result_to_msg(deploy_result):
-    msg = 'OK: %s\n' % deploy_result.get('OK', False)
-    msg += 'remove_success_results:\n'
+    msg = 'remove successed results:\n'
     for pgname, pgr in deploy_result['remove_success_results'].iteritems():
-        msg += '  %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
-    msg += 'remove_missed_results:\n'
+        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
+    msg += 'remove missed results:\n'
     for pgname, pgr in deploy_result['remove_missed_results'].iteritems():
-        msg += '  %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
-    msg += 'remove_failed_results:\n'
+        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
+    msg += 'remove failed results:\n'
     for pgname, pgr in deploy_result['remove_failed_results'].iteritems():
-        msg += '  %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
+        msg += '    %s\n%s\n' % (pgname, render_op_result_to_msg(pgr))
     return msg
 
 
 def render_app_remove_result_to_msg(remove_result):
-    msg = 'OK: %s\n' % remove_result.get('OK', False)
-    msg += 'app_remove_results:\n'
+    msg = 'app remove results:\n'
     msg += render_basic_app_remove_result_to_msg(
         remove_result['app_remove_results'])
 
     instance_remove_results = remove_result['dp_resources_remove_results']
     if instance_remove_results.get('has_resource', False):
-        msg += 'resource_instance_remove_results:\n'
+        msg += 'resource instance remove results:\n'
         for riname, remove_result in instance_remove_results['instances_remove_results'].iteritems():
             msg += '  %s\n%s\n' % (riname,
                                    render_basic_app_remove_result_to_msg(remove_result))
@@ -155,20 +134,8 @@ def render_app_remove_result_to_msg(remove_result):
 
 
 def render_app_update_result_to_msg(update_result, is_resource_instance=False):
-    msg = 'OK: %s\n' % update_result.get('OK', False)
-    if not is_resource_instance:
-        msg += 'dp_resource_update_results:\n'
-        resource_update_results = update_result['dp_resources_update_results']
-        msg += '  resource_instance_deploy_results:\n'
-        msg += '    %s\n' % (render_resource_deploy_result_to_msg(resource_update_results))
-        msg += '  resource_instance_remove_results:\n'
-        for riname, remove_result in resource_update_results['instances_remove_results'].iteritems():
-            msg += '    %s\n%s\n' % (riname,
-                                     render_basic_app_remove_result_to_msg(remove_result))
-        app_results = update_result['app_update_results']
-    msg += 'app_update_results:\n'
-    msg += '%s\n' % (render_basic_app_deploy_result_to_msg(
-        update_result if is_resource_instance else app_results))
+    app_results = update_result['app_update_results']
+    msg = '%s\n' % (render_basic_app_deploy_result_to_msg(app_results))
     return msg
 
 
@@ -374,9 +341,10 @@ class AppApi:
 
             app.clear_last_error()
             app.set_deploying()
-            t = Thread(target=cls._app_deploy_thread, args=(
-                access_token, app, target_meta_version,))
-            t.start()
+            err = cls._app_deploy(access_token, app, target_meta_version)
+            if err is not None:
+                return (406, None, 'request of deploy app %s is not acceptable with error:%s' %
+                        (appname, err), reverse('api_app', kwargs={'appname': appname}))
 
             return (202, AppApi.render_app(app), 'deploy request of app %s has been accepted.' % appname,
                     reverse('api_app', kwargs={'appname': appname}))
@@ -395,7 +363,7 @@ class AppApi:
                     reverse('api_docs'))
 
     @classmethod
-    def _app_deploy_thread(cls, token, app, meta_version):
+    def _app_deploy(cls, token, app, meta_version):
         try:
             op_logger.info("DEPLOY: app %s deployed by %s to version %s" % (
                 app.appname, AuthApi.operater, meta_version))
@@ -424,13 +392,13 @@ class AppApi:
                 logger.info("%s deploy result: %s" % (
                     app.appname, render_app_deploy_result_to_msg(deploy_result)))
                 if not deploy_result.get("OK", False):
-                    raise Exception("error deploying : %s" %
+                    raise Exception("\n%s\n" %
                                     render_app_deploy_result_to_msg(deploy_result))
         except Exception, e:
             client.captureException()
-            error_msg = "error deploying app %s : %s" % (app.appname, str(e))
+            error_msg = "\nDeploy app %s results: %s" % (app.appname, str(e))
             logger.error(error_msg)
-            app.update_last_error(error_msg)
+            return error_msg
         finally:
             app.set_deployed()
 
@@ -560,9 +528,10 @@ class AppApi:
 
             app.clear_last_error()
             app.set_deploying()
-            t = Thread(target=cls._app_update_thread, args=(
-                access_token, app, target_meta_version,))
-            t.start()
+            err = cls._app_update(access_token, app, target_meta_version)
+            if err is not None:
+                return (406, None, 'request of update app %s is not acceptable with error:%s' %
+                        (appname, err), reverse('api_app', kwargs={'appname': appname}))
             return (202, AppApi.render_app(app), 'update request of app %s has been accepted.' % appname,
                     reverse('api_app', kwargs={'appname': appname}))
         except InvalidMetaVersion, ime:
@@ -577,7 +546,7 @@ class AppApi:
                     reverse('api_app', kwargs={'appname': appname}))
 
     @classmethod
-    def _app_update_thread(cls, token, app, target_meta_version):
+    def _app_update(cls, token, app, target_meta_version):
         former_version, former_meta = app.meta_version, app.meta
         try:
             if app.appname.find('.') > 0:
@@ -586,13 +555,14 @@ class AppApi:
                 cls._update_normal_app(token, app, target_meta_version)
         except Exception, e:
             client.captureException()
-            error_msg = "error when updating app %s : %s" % (
+            error_msg = "\nUpdating app %s results: %s" % (
                 app.appname, str(e))
             logger.error(error_msg)
             # role back to the former version if error happends
             app.meta_version = former_version
             app.meta = former_meta
-            app.update_last_error(error_msg)
+            # app.update_last_error(error_msg)
+            return error_msg
         finally:
             app.set_deployed()
 
@@ -632,7 +602,7 @@ class AppApi:
         logger.info("%s update result: %s" % (instance.appname,
                                               render_app_update_result_to_msg(update_result, is_resource_instance=True)))
         if not update_result.get("OK", False):
-            raise Exception("error updating : %s" % render_app_update_result_to_msg(
+            raise Exception("\n%s\n" % render_app_update_result_to_msg(
                 update_result, is_resource_instance=True))
 
     @classmethod
@@ -676,7 +646,7 @@ class AppApi:
             logger.info("%s update result: %s" % (
                 app.appname, render_app_update_result_to_msg(update_result)))
             if not update_result.get("OK", False):
-                raise Exception("error updating : %s" %
+                raise Exception("\n%s\n" %
                                 render_app_update_result_to_msg(update_result))
 
     @classmethod
@@ -1162,7 +1132,8 @@ class ProcApi:
 
                 podgroup_name = "%s.%s.%s" % (
                     appname, proc.type.name, proc.name)
-                result = app.podgroup_operate(podgroup_name, instance, operation)
+                result = app.podgroup_operate(
+                    podgroup_name, instance, operation)
                 if result.status_code < 400:
                     return (202, ProcApi.render_proc_data(appname, proc),
                             render_op_result_to_msg(result),
