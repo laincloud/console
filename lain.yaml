@@ -1,10 +1,12 @@
 appname: console
 
 build:
-  base: laincloud/centos-lain:20160503
+  base: laincloud/centos-lain:20171212
   prepare:
-    version: "20170612"
+    version: "20171212"
     script:
+      - mkdir -p /root/.pip
+      - cp -f pip.conf /root/.pip/pip.conf
       - yum install -y yum-plugin-ovl
       - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
@@ -17,8 +19,6 @@ build:
       - touch /sbin/modprobe && chmod +x /sbin/modprobe
       - pip install -r pip-req.txt
   script:
-    - mkdir -p /root/.pip
-    - cp -f pip.conf /root/.pip/pip.conf
     - cd $(npm root -g)/npm && npm install fs-extra && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js # fix npm error
     - cd $GOPATH/src/github.com/laincloud/archon && git pull && gobuildweb dist && cp archon-0.1.zip /lain/app/ # note docker may use cache, you should delete the old image
     - unzip -o /lain/app/archon-0.1.zip
@@ -32,7 +32,7 @@ test:
     - CONSOLE_DEBUG=1 py.test  --cov=.
 
 web:
-  cmd: ./archon.sh
+  cmd: /lain/app/archon.sh
   port: 9000
   memory: 256m
   secret_files:
@@ -40,7 +40,7 @@ web:
   secret_files_bypass: True
 
 web.console:
-  cmd: ./entry.sh
+  cmd: /lain/app/entry.sh
   port: 8000
   secret_files:
     - config
