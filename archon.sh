@@ -26,4 +26,4 @@ if [ "$api_server" == "/" ];
 fi
 
 
-exec ./archon-0.1.linux.amd64 -sso-client-id=$client_id -api-server=$api_server -sso-server=$sso_server -entry-server=$ws_scheme"://entry."$environ -mode=frontend
+exec ./archon-0.1.linux.amd64 -sso-client-id=$client_id -api-server=$api_server -sso-server=$sso_server -log-server=$console_api_scheme"://lxcmond."$environ -entry-server=$ws_scheme"://entry."$environ -mode=frontend
