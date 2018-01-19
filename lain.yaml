@@ -3,10 +3,8 @@ appname: console
 build:
   base: laincloud/centos-lain:20180103
   prepare:
-    version: "20171212"
+    version: "20171213"
     script:
-      - mkdir -p /root/.pip
-      - cp -f pip.conf /root/.pip/pip.conf
       - yum install -y yum-plugin-ovl
       - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
@@ -29,7 +27,7 @@ test:
   script:
     - mkdir /lain/logs/
     - make pylint test
-    - CONSOLE_DEBUG=1 py.test  --cov=.
+    - CONSOLE_DEBUG=1 py.test --cov=.
 
 web:
   cmd: /lain/app/archon.sh
