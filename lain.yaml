@@ -1,7 +1,7 @@
 appname: console
 
 build:
-  base: laincloud/centos-lain:20171212
+  base: laincloud/centos-lain:20180103
   prepare:
     version: "20171212"
     script:
