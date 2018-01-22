@@ -3,8 +3,10 @@ appname: console
 build:
   base: laincloud/centos-lain:20180103
   prepare:
-    version: "20171213"
+    version: "20171214"
     script:
+      - mkdir -p /root/.pip
+      - cp -f pip.conf /root/.pip/pip.conf
       - yum install -y yum-plugin-ovl
       - yum install -y gcc-c++
       - git clone --depth=1 https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
