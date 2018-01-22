@@ -20,6 +20,9 @@ APISERVER = environ.get("CONSOLE_APISERVER", "http://deploy.%s" % DOMAIN)
 SERVER_NAME = environ.get("CONSOLE_SERVER_NAME", "console.%s" % MAIN_DOMAIN)
 APPS_ETCD_PREFIX = environ.get(
     "CONSOLE_APPS_ETCD_PREFIX", "/lain/console/apps")
+PROTECTED_APPS_ETCD_PREFIX = environ.get(
+    "PROTECTED_APPS_ETCD_PREFIX", "/lain/config/protected_apps")
+
 DEBUG = environ.get("CONSOLE_DEBUG", False)
 SYSTEM_VOLUMES_ETCD_PREFIX = environ.get(
     "CONSOLE_SYSTEM_VOLUMES_ETCD_PREFIX", "/lain/config/system_volumes")
