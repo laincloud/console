@@ -1,5 +1,6 @@
 # -*- coding: utf-8
 
+import json
 import copy
 import humanfriendly
 from threading import Thread
@@ -8,7 +9,8 @@ from .specs import render_podgroup_spec_from_json, AppType
 from authorize.models import Authorize, Group
 from configs.models import Config
 from commons.miscs import InvalidMetaVersion, NoAvailableImages, InvalidLainYaml
-from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES
+from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES, ETCD_AUTHORITY, PROTECTED_APPS_ETCD_PREFIX
+from commons.utils import get_etcd_value
 from notifies.notify import image_push_notify
 from .utils import convert_time_from_deployd
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
@@ -474,6 +476,12 @@ class AppApi:
                         'Not allow to delete resource app.',
                         reverse('api_apps'))
 
+            v = get_etcd_value(PROTECTED_APPS_ETCD_PREFIX, ETCD_AUTHORITY, '[]')
+            protected_apps = json.loads(v)
+            if appname in protected_apps:
+                return (403, AppApi.render_app(app),
+                        'Not allow to delete protected app.',
+                        reverse('api_apps'))
             op_logger.info("DELETE: app %s deleted by %s" %
                            (appname, AuthApi.operater))
 
