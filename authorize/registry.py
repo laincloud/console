@@ -5,8 +5,10 @@ import sys
 import jwt
 import time
 import random
+import ipaddress
 from netaddr import IPNetwork, IPAddress
 from commons.settings import DOMAIN, NODE_NETWORK, REGISTRY_IP_WHITELIST, LAIN_ADMIN_NAME
+from ipaddress import IPv4Address
 from log import logger
 
 
@@ -89,8 +91,30 @@ def ip_in_whitelist(ip):
     try:
         logger.debug("client ip request for registry auth is %s" % ip)
         white_ips = [x.strip() for x in REGISTRY_IP_WHITELIST.split(',')]
-        if ip in white_ips:
+        networks, ranges, ips = [], [], []
+        for ip_str in white_ips:
+            if ip_str.find('/') >= 0:
+                try:
+                    networks.append(ipaddress.network(unicode(ip_str)))
+                except Exception as e:
+                    logger.warnf("format of ip net %s is invalid" % ip_str)
+            elif ip_str.find('-') >= 0:
+                try:
+                    first, last = ip_str.split('-')
+                    networks.append(ipaddress.summarize_address_range(
+                        IPv4Address(unicode(first)), IPv4Address(unicode(last))))
+                except Exception as e:
+                    logger.warnf("format of ip range %s is invalid" % ip_str)
+            else:
+                ips.append(ip_str)
+        if ip in ips:
             return True
+        for ip_range in ranges:
+            if IPv4Address(ip) in ip_range:
+                return True
+        for network in networks:
+            if IPv4Address(ip) in network:
+                return True
         return IPAddress(ip) in IPNetwork(NODE_NETWORK)
     except Exception, e:
         logger.error(
