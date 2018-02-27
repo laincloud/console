@@ -95,16 +95,16 @@ def ip_in_whitelist(ip):
         for ip_str in white_ips:
             if ip_str.find('/') >= 0:
                 try:
-                    networks.append(ipaddress.network(unicode(ip_str)))
+                    networks.append(ipaddress.ip_network(unicode(ip_str)))
                 except Exception as e:
-                    logger.warnf("format of ip net %s is invalid" % ip_str)
+                    logger.warning("format of ip net %s is invalid" % ip_str)
             elif ip_str.find('-') >= 0:
                 try:
                     first, last = ip_str.split('-')
-                    networks.append(ipaddress.summarize_address_range(
+                    ranges.append(ipaddress.summarize_address_range(
                         IPv4Address(unicode(first)), IPv4Address(unicode(last))))
                 except Exception as e:
-                    logger.warnf("format of ip range %s is invalid" % ip_str)
+                    logger.warning("format of ip range %s is invalid" % ip_str)
             else:
                 ips.append(ip_str)
         if ip in ips:

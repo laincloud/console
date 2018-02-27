@@ -2,6 +2,7 @@
 
 import yaml
 import json
+import re
 import collections
 from etcd import EtcdKeyNotFound
 from .specs import render_app_spec, AppType
@@ -335,7 +336,8 @@ class BaseApp:
         return result
 
     def check_giturl(self, meta, update=False):
-        giturl = meta.get('giturl', '').rstrip(".git")
+        giturl = meta.get('giturl', '')
+        giturl = re.sub('\.git$', '', giturl)
         if giturl != '' and not giturl.startswith("http"):
             giturl = "http://" + giturl
         if update and self.update_git_url(giturl):
