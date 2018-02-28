@@ -38,7 +38,7 @@ class Authorize:
     @classmethod
     def authorize_registry(cls, request):
         info = authorize.registry.parse_request(request)
-        if len(info.actions) == 1 and str(info.actions[0]) == 'pull':
+        if isinstance(info.actions, (list, tuple)) and len(info.actions) == 1 and str(info.actions[0]) == 'pull':
             return True, authorize.registry.get_jwt_with_request_info(info)
         if not authorize.registry.ip_in_whitelist(info.client_ip):
             if not authorize.utils.is_valid_user(info.username, info.password):
@@ -51,7 +51,6 @@ class Authorize:
                     logger.warning("requests from %s for %s not valid" % (
                         info.username, info.appname))
                     return False, 'the user has no access to %s' % info.appname
-
         return True, authorize.registry.get_jwt_with_request_info(info)
 
     @classmethod
