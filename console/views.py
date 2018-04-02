@@ -231,8 +231,12 @@ def api_proc_history_get(request, appname, procname, instance):
 @deployd_required
 def api_proc_high_permit(request, appname, procname):
     if request.method == 'DELETE':
+        try:
+            options = json.loads(request.body)
+        except Exception:
+            options = None
         status_code, view_object, msg, url = ProcApi.delete_app_proc(
-            appname, procname)
+            appname, procname, options)
         return render_json_response(status_code, 'proc', view_object, msg, url)
     elif request.method == 'PATCH':
         try:

@@ -43,7 +43,7 @@ def render_op_result_to_msg(op_result):
 def render_podgroup_deploy_result_to_msg(deploy_result):
     msg = 'proc deploy result:\n'
     for pgname, pgr in deploy_result['podgroup_result'].iteritems():
-        msg += '    %s\n' % ( render_op_result_to_msg(pgr))
+        msg += '    %s\n' % (render_op_result_to_msg(pgr))
     services = deploy_result['services_need_deploy']
     if services is not None and len(services) > 0:
         msg += '    services_need_deploy:\n'
@@ -476,7 +476,8 @@ class AppApi:
                         'Not allow to delete resource app.',
                         reverse('api_apps'))
 
-            v = get_etcd_value(PROTECTED_APPS_ETCD_PREFIX, ETCD_AUTHORITY, '[]')
+            v = get_etcd_value(PROTECTED_APPS_ETCD_PREFIX,
+                               ETCD_AUTHORITY, '[]')
             protected_apps = json.loads(v)
             if appname in protected_apps:
                 return (403, AppApi.render_app(app),
@@ -873,7 +874,7 @@ class ProcApi:
                 return (400, None,
                         'no such proc %s in app %s' % (procname, appname),
                         reverse('api_procs', kwargs={'appname': appname}))
-            if pg_status:
+            if pg_status and options.get('type', None) != 'canary':
                 return (409, ProcApi.render_proc_data(appname, proc, pg_status),
                         'proc with procname %s already exists\n' % procname,
                         reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
@@ -882,11 +883,18 @@ class ProcApi:
                 procname, appname, AuthApi.operater))
 
             add_oplog(AuthApi.operater, "DEPLOY", appname, "",
-                      "proc depolyd" % procname)
+                      "proc %s depolyd" % procname)
 
             podgroup_name = "%s.%s.%s" % (
                 app.appname, proc.type.name, proc.name)
             podgroup_spec = app.podgroup_spec(podgroup_name)
+            # if create canary type proc, 1. rename pgname 2. add canary info
+            if options is not None and options.get('type', None) == 'canary':
+                podgroup_spec.Name = "%s.%s.%s" % (
+                    app.appname, 'canary', proc.name)
+                podgroup_spec.Pod.Name = podgroup_spec.Name
+                podgroup_spec.strategies = options.get('strategies', [])
+                
             deploy_result = recursive_deploy(podgroup_spec)
             if deploy_result.get("OK", False):
                 return (201, ProcApi.render_proc_data(appname, proc, app.podgroup_status(podgroup_name)),
@@ -1084,6 +1092,11 @@ class ProcApi:
 
                 podgroup_name = "%s.%s.%s" % (
                     appname, proc.type.name, proc.name)
+
+                if options is not None and options.get('type', None) == 'canary':
+                    podgroup_name = "%s.%s.%s" % (
+                    appname, 'canary', proc.name)
+
                 remove_result = app.podgroup_remove(podgroup_name)
                 if remove_result.status_code < 400:
                     return (202, ProcApi.render_proc_data(appname, proc),
