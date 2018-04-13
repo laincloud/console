@@ -38,7 +38,9 @@ class Authorize:
     @classmethod
     def authorize_registry(cls, request):
         info = authorize.registry.parse_request(request)
-        if len(info.actions) == 1 and str(info.actions[0]) == 'pull':
+        if info.actions is not None and \
+           len(info.actions) == 1 and \
+           str(info.actions[0]) == 'pull':
             return True, authorize.registry.get_jwt_with_request_info(info)
         if not authorize.registry.ip_in_whitelist(info.client_ip):
             if not authorize.utils.is_valid_user(info.username, info.password):
