@@ -127,6 +127,11 @@ def get_group_info(appname):
     return send_request("GET", url, headers, None, None)
 
 
+def get_user_group(username):
+    url = "{}/api/users/{}".format(_get_sso_server(), username)
+    headers = {"Accept": "application/json"}
+    return send_request("GET", url, headers, None, None)
+
 def get_user_role(username, appname):
     group_name = get_group_name_for_app(appname)
     headers = {"Accept": "application/json"}

@@ -47,6 +47,10 @@ class Authorize:
                 logger.warning("requests from %s, %s not valid" % (
                     info.username, info.password))
                 return False, 'the username or password may not be correct.'
+
+            if LAIN_ADMIN_NAME in authorize.utils.get_user_group(info.username).json()["groups"]:
+                return True, authorize.registry.get_jwt_with_request_info(info)
+
             if info.appname:
                 succ, role = Group.get_user_role(info.username, info.appname)
                 if not succ:
