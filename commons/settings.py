@@ -81,3 +81,6 @@ NOTIFIES_TYPES = {'imagepush': IMAGE_PUSH_KEY}
 
 # git configs
 GITLAB_TOKEN = environ.get("GITLAB_TOKEN", "1234567890")
+
+# archon is console's frontend
+ARCHON_HOST = 'archon.{}'.format(MAIN_DOMAIN)

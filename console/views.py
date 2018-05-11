@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
 from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, StreamrouterApi, NotifyApi
 from apis.views import is_deployable
-from commons.settings import SERVER_NAME, AUTH_TYPES
+from commons.settings import SERVER_NAME, AUTH_TYPES, ARCHON_HOST
 from functools import wraps
 from log import logger
 
@@ -67,6 +67,9 @@ def render_json_response(status_code, view_object_name, view_object, msg, url):
         'url': url
     })
     r.status_code = status_code
+    # r['Access-Control-Allow-Origin'] = ' '.join(['https://{}'.format(ARCHON_HOST),
+    #                                              'http://{}'.format(ARCHON_HOST)])
+    r['Access-Control-Allow-Origin'] = '*'
     return r
 
 
