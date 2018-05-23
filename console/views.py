@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
 from apis.views import AppApi, ProcApi, AuthApi, MaintainApi, ResourceApi, StreamrouterApi, NotifyApi
 from apis.views import is_deployable
-from commons.settings import SERVER_NAME, AUTH_TYPES, ARCHON_HOST
+from commons.settings import SERVER_NAME, AUTH_TYPES
 from functools import wraps
 from log import logger
 
@@ -67,9 +67,6 @@ def render_json_response(status_code, view_object_name, view_object, msg, url):
         'url': url
     })
     r.status_code = status_code
-    # r['Access-Control-Allow-Origin'] = ' '.join(['https://{}'.format(ARCHON_HOST),
-    #                                              'http://{}'.format(ARCHON_HOST)])
-    r['Access-Control-Allow-Origin'] = '*'
     return r
 
 
@@ -241,9 +238,10 @@ def api_proc_high_permit(request, appname, procname):
         try:
             options = json.loads(request.body)
             operation = options.get('operation', 'schedule')
+            access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
             if operation == 'schedule':
                 status_code, view_object, msg, url = ProcApi.update_app_proc(
-                    appname, procname, options)
+                    access_token, appname, procname, options)
             else:
                 status_code, view_object, msg, url = ProcApi.operate_proc(
                     appname, procname, operation, options)

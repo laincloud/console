@@ -1,4 +1,4 @@
-appname: console-tmp
+appname: console
 
 build:
   base: laincloud/python:2.7
@@ -28,8 +28,6 @@ web.console:
     - /api
   env:
       - CONSOLE_APISERVER=http://deployd.lain:9003
-      - CONSOLE_AUTH_COMPLETE_URL=https://archon.yxapp.xyz/authorize/complete
-      - CONSOLE_NEED_AUTH_ETCD_KEY=/lain/config/auth/console-tmp
   logs:
     - console_log
     - console_op
