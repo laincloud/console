@@ -8,7 +8,8 @@ from urlparse import urlparse, parse_qs
 from commons.utils import read_from_etcd
 from commons.settings import (ETCD_AUTHORITY, SSO_GROUP_NAME_PREFIX, SSO_GROUP_FULLNAME_PREFIX,
                               SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_REDIRECT_URI, SSO_GRANT_TYPE,
-                              CONSOLE_AUTH_COMPLETE_URL, CONSOLE_NEED_AUTH_ETCD_KEY)
+                              CONSOLE_AUTH_COMPLETE_URL, CONSOLE_NEED_AUTH_ETCD_KEY,
+                              ARCHON_HOST)
 from log import logger
 
 
@@ -69,9 +70,8 @@ def get_sso_access_token(code):
 
 
 def redirect_to_ui(token_json):
-    response = http.HttpResponseRedirect(CONSOLE_AUTH_COMPLETE_URL)
-    response.set_cookie('ACCESS_TOKEN', value=token_json[
-                        'access_token'], max_age=token_json['expires_in'], httponly=False)
+    response = http.HttpResponseRedirect('{}?access_token={}&expires_in={}'.format(
+        CONSOLE_AUTH_COMPLETE_URL, token_json['access_token'], token_json['expires_in']))
     return response
 
 

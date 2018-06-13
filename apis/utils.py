@@ -41,6 +41,7 @@ def get_domains():
 
 
 VALID_TAG_PATERN = re.compile(r"^(meta)-(?P<meta_version>\S+-\S+)$")
+VALID_IMAGE_VERSION_PATTERN = re.compile(r'^\d{10}-\w{40}$')
 
 
 def get_meta_version_from_tag(tag):
@@ -241,3 +242,11 @@ def convert_time_from_deployd(d_time):
     except Exception as e:
         logger.error("strftime error:%s d_time:%s", str(e), d_time)
     return orc_convert_time_from_deployd(d_time)
+
+
+def is_valid_image_version(image_version):
+    v = VALID_IMAGE_VERSION_PATTERN.match(image_version)
+    if v:
+        return True
+    else:
+        return False
