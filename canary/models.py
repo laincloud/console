@@ -89,7 +89,6 @@ class ABTest:
             data=abtest_policy_group.to_json(),
             timeout=TIMEOUT)
         logging.info('>>> r.text: {}.'.format(r.text))
-        logging.info('>>> data: {}.'.format(abtest_policy_group.to_json()))
         if r.status_code != requests.codes.ok or r.json()['code'] != 200:
             return False, r.json()['desc']
 

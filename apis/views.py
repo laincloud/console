@@ -1593,7 +1593,7 @@ class CanaryProc:
         '''
         return: ok, error_message
         '''
-        if self.action is None or self.action not in ['deploy', 'undeploy']:
+        if self.action not in ['deploy', 'undeploy']:
             return False, 'invalid action: {}'.format(self.action)
 
         if self.action == "deploy":
@@ -1602,8 +1602,7 @@ class CanaryProc:
                 return False, 'invalid image_version: {}'.format(
                     self.image_version)
 
-            if self.secret_files is None or not isinstance(self.secret_files,
-                                                        list):
+            if not isinstance(self.secret_files, list):
                 return False, 'invalid secret_files: {}'.format(self.secret_files)
 
         return True, ''
@@ -1690,11 +1689,11 @@ class CanaryPolicyGroup:
         self.id_ = previous_policy_group_id
 
     def is_valid(self):
-        if self.action is None or self.action not in ['deploy', 'undeploy']:
+        if self.action not in ['deploy', 'undeploy']:
             return False, 'invalid action: {}'.format(self.action)
 
         if self.action == 'deploy':
-            if self.mountpoints is None or not isinstance(self.mountpoints, list):
+            if not isinstance(self.mountpoints, list):
                 return False, 'invalid mounpoints: {}'.format(self.mountpoints)
 
             if not self.rules.is_valid():

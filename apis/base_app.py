@@ -185,7 +185,7 @@ class BaseApp:
                     registry=PRIVATE_REGISTRY, domains=get_domains())
         for procname in self.canaries:
             canary_proc_conf = self.__get_canary_proc_conf(config, procname)
-            if canary_proc_conf is not None:
+            if canary_proc_conf:
                 config.procs[canary_proc_conf.name] = canary_proc_conf
         return config
 
@@ -375,17 +375,15 @@ class BaseApp:
         return False, None
 
     def __get_canary_proc(self, procname):
-        if self.canaries.get(procname) is None:
-            return None
-        return self.canaries.get(procname).get('canary_proc')
+        return self.canaries.get(procname, {}).get('canary_proc')
 
     def __get_canary_proc_conf(self, lain_config, procname):
         canary_proc = self.__get_canary_proc(procname)
-        if canary_proc is None:
+        if not canary_proc:
             return None
 
         proc_conf = lain_config.procs.get(procname)
-        if proc_conf is None:
+        if not proc_conf:
             return None
 
         canary_proc_conf = copy.deepcopy(proc_conf)
@@ -398,13 +396,8 @@ class BaseApp:
         '''
         canary_proc: .views.CanaryProc.to_dict()
         '''
-        canary = self.canaries.get(procname)
-        if canary is None:
-            canary = {
-                'canary_proc': canary_proc,
-            }
-        else:
-            canary['canary_proc'] = canary_proc
+        canary = self.canaries.get(procname, {})
+        canary['canary_proc'] = canary_proc
         self.canaries[procname] = canary
         self.save()
         config = self.lain_config
@@ -413,47 +406,32 @@ class BaseApp:
         self._app_spec = render_app_spec(config)
 
     def remove_canary_proc(self, procname):
-        if self.__get_canary_proc(procname) is None:
+        if not self.__get_canary_proc(procname):
             return
 
         del self.canaries[procname]['canary_proc']
         self.save()
 
     def __get_canary_policy_group(self, procname):
-        if self.canaries.get(procname) is None:
-            return None
-        return self.canaries.get(procname).get('policy_group')
+        return self.canaries.get(procname, {}).get('policy_group')
 
     def set_canary_policy_group(self, procname, canary_policy_group):
         '''
         canary_policy_group: .views.CanaryPolicyGroup.to_dict()
         '''
-        canary = self.canaries.get(procname)
-        if canary is None:
-            canary = {
-                'policy_group': canary_policy_group,
-            }
-        else:
-            canary['policy_group'] = canary_policy_group
+        canary = self.canaries.get(procname, {})
+        canary['policy_group'] = canary_policy_group
         self.canaries[procname] = canary
         self.save()
 
     def remove_canary_policy_group(self, procname):
-        if self.__get_canary_policy_group(procname) is None:
+        if not self.__get_canary_policy_group(procname):
             return
         del self.canaries[procname]['policy_group']
         self.save()
 
     def get_canary_policy_group_id(self, procname):
-        canary = self.canaries.get(procname)
-        if canary is None:
-            return None
-
-        policy_group = canary.get('policy_group')
-        if policy_group is None:
-            return None
-
-        return policy_group.get('id')
+        return self.canaries.get(procname, {}).get('policy_group', {}).get('id')
 
     def __unicode__(self):
         return '<%s:%s>' % (self.appname, self.meta_version)

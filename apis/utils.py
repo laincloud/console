@@ -246,7 +246,7 @@ def convert_time_from_deployd(d_time):
 
 def is_valid_image_version(image_version):
     v = VALID_IMAGE_VERSION_PATTERN.match(image_version)
-    if v is not None:
+    if v:
         return True
     else:
         return False
