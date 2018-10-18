@@ -42,7 +42,7 @@ SSO_GRANT_TYPE = environ.get("SSO_GRANT_TYPE", "authorization_code")
 SSO_REDIRECT_URI = environ.get(
     "SSO_REDIRECT_URI", "%s://console.%s/api/v1/authorize/" % (CONSOLE_API_SCHEME, MAIN_DOMAIN))
 CONSOLE_AUTH_COMPLETE_URL = environ.get(
-    "CONSOLE_AUTH_COMPLETE_URL", "%s://archon.%s/authorize/complete" % (CONSOLE_API_SCHEME, MAIN_DOMAIN))
+    "CONSOLE_AUTH_COMPLETE_URL", "%s://console.%s/archon/authorize/complete" % (CONSOLE_API_SCHEME, MAIN_DOMAIN))
 # sso group name setting
 SSO_GROUP_NAME_PREFIX = environ.get(
     "SSO_GROUP_NAME_PREFIX", "lainapp-%s" % MAIN_DOMAIN)
@@ -81,8 +81,3 @@ NOTIFIES_TYPES = {'imagepush': IMAGE_PUSH_KEY}
 
 # git configs
 GITLAB_TOKEN = environ.get("GITLAB_TOKEN", "1234567890")
-
-# archon is console's frontend
-ARCHON_HOST = 'archon.{}'.format(MAIN_DOMAIN)
-
-WEBROUTER_ABTEST_API = 'http://webrouter.{}/ab_admin'.format(MAIN_DOMAIN)

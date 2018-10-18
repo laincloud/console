@@ -18,7 +18,7 @@ script:
   - LAIN_APPNAME=console
   - LAIN_IMAGE_VERSION="$(git show -s --format=%ct $TRAVIS_COMMIT)-$TRAVIS_COMMIT"
   - ci_env=`bash <(curl -s https://codecov.io/env)`
-  - docker run $ci_env --name console-build $LAIN_APPNAME:build-$LAIN_IMAGE_VERSION bash -c 'rm -rf * && git clone https://github.com/laincloud/console && cd console && pip install codecov && pip install -r pip-req.txt && mkdir -p /lain/logs && CONSOLE_DEBUG=1 py.test --cov=./ && bash <(curl -s https://codecov.io/bash) && codecov'
+  - docker run $ci_env --name console-build $LAIN_APPNAME:build-$LAIN_IMAGE_VERSION bash -c 'rm -rf * && yum install -y git && git clone https://github.com/laincloud/console && cd console && pip install codecov && pip install -r pip-req.txt && mkdir -p /lain/logs && CONSOLE_DEBUG=1 py.test --cov=./ && bash <(curl -s https://codecov.io/bash) && codecov'
 
 after_success:
   - LAIN_APPNAME=console

@@ -5,23 +5,20 @@ import copy
 import humanfriendly
 from threading import Thread
 from .models import App, Resource, Streamrouter, Notify, recursive_deploy, default_deploy
-from .specs import render_podgroup_spec_from_json, AppType, json_of_spec
+from .specs import render_podgroup_spec_from_json, AppType
 from authorize.models import Authorize, Group
 from configs.models import Config
 from commons.miscs import InvalidMetaVersion, NoAvailableImages, InvalidLainYaml
 from commons.settings import PRIVATE_REGISTRY, AUTH_TYPES, ETCD_AUTHORITY, PROTECTED_APPS_ETCD_PREFIX
 from commons.utils import get_etcd_value
 from notifies.notify import image_push_notify
-from .utils import convert_time_from_deployd, is_valid_image_version
+from .utils import convert_time_from_deployd
 from lain_sdk.yaml.parser import ProcType, resource_instance_name
 from django.core.urlresolvers import reverse
-from django.http.response import HttpResponse
 from raven.contrib.django.raven_compat.models import client
 from log import logger, op_logger
 from oplog.models import add_oplog
 from git.client import fetch_project_commits
-
-from canary.models import ABTest, ABTestPolicyGroup
 
 
 def render_op_result(op_result):
@@ -168,7 +165,6 @@ class AppApi:
             'metaversion': '',
             'updatetime': last_update,
             'deployerror': last_error,
-            'canaries': app.canaries,
             'procs': [],
             'portals': [],
             'useservices': [],
@@ -960,13 +956,11 @@ class ProcApi:
                     reverse('api_procs', kwargs={'appname': appname}))
 
     @classmethod
-    def update_app_proc(cls, access_token, appname, procname, options):
-        def verify_options(options, app, procname):
+    def update_app_proc(cls, appname, procname, options):
+        def verify_options(options):
             num_instances_flag = None
             cpu_flag = None
             memory_flag = None
-            canary_proc_flag = None
-            canary_policy_group_flag = None
             msg = ''
             verified_options = {}
             if options.has_key('num_instances'):
@@ -994,45 +988,23 @@ class ProcApi:
                 except:
                     msg += 'invalid parameter: memory (%s) humanfriendly.parse_size(memory) failed' % memory
                     memory_flag = False
-            if options.has_key('canary_proc'):
-                canary_proc_flag = True
-                canary_proc = CanaryProc(options['canary_proc'])
-                ok, err = canary_proc.is_valid()
-                if not ok:
-                    msg += '{}\n'.format(err)
-                    canary_proc_flag = False
-                else:
-                    verified_options['canary_proc'] = canary_proc
-            if options.has_key('canary_policy_group'):
-                canary_policy_group_flag = True
-                previous_policy_group_id = app.get_canary_policy_group_id(procname)
-                canary_policy_group = CanaryPolicyGroup(options['canary_policy_group'], previous_policy_group_id)
-                ok, err = canary_policy_group.is_valid()
-                if not ok:
-                    msg += '{}\n'.format(err)
-                    canary_policy_group_flag = False
-                else:
-                    verified_options['canary_policy_group'] = canary_policy_group
-
             ret_flag = all([
                 len(verified_options),
                 not(num_instances_flag is False),
                 not(cpu_flag is False),
                 not(memory_flag is False),
-                not(canary_proc_flag is False),
-                not(canary_policy_group_flag is False),
             ])
             if len(verified_options) == 0 and msg == '':
                 msg = 'missing parameters: num_instances OR cpu OR memory'
             return ret_flag, msg, verified_options
+        is_valid, msg, verified_options = verify_options(options)
         try:
             app = App.get_or_none(appname)
-            if app is None or not app.is_reachable():
+            if not app.is_reachable():
                 return (404, None,
                         'app with appname %s has not been deployd\n' % appname,
                         reverse('api_apps'))
 
-            is_valid, msg, verified_options = verify_options(options, app, procname)
             if not is_valid:
                 return (400, None, msg, reverse('api_proc', kwargs={'appname': appname, 'procname': procname}))
             if verified_options.has_key('num_instances') and len(verified_options) > 1:
@@ -1055,7 +1027,7 @@ class ProcApi:
                     new_podgroup_spec.NumInstances = verified_options[
                         'num_instances']
                     deploy_result = app.podgroup_scale(new_podgroup_spec)
-                elif verified_options.has_key('cpu') or verified_options.has_key('memory'):
+                else:  # should has_key('cpu') or has_key('memory')
                     # TODO
                     new_cpu = verified_options.get('cpu', None)
                     new_memory = verified_options.get('memory', None)
@@ -1070,31 +1042,6 @@ class ProcApi:
                             c.MemoryLimit = new_memory
                     deploy_result = app.podgroup_deploy(
                         new_podgroup_spec, autopatch=False)
-                elif verified_options.has_key('canary_proc'):
-                    canary_proc = verified_options.get('canary_proc')
-                    podgroup_spec = app.podgroup_spec(now_podgroup_spec.Name)
-                    new_podgroup_spec = canary_proc.gen_podgroup_spec(access_token, podgroup_spec)
-                    if canary_proc.action == 'deploy':
-                        app.set_canary_proc(procname, canary_proc.to_dict())
-                        deploy_result = app.podgroup_deploy(new_podgroup_spec)
-                    elif canary_proc.action == 'undeploy':
-                        app.remove_canary_proc(procname)
-                        deploy_result = app.podgroup_remove(new_podgroup_spec.Name)
-                elif verified_options.has_key('canary_policy_group'):
-                    canary_policy_group = verified_options.get('canary_policy_group')
-                    deploy_result = HttpResponse()
-                    ok, err = True, ''
-                    if canary_policy_group.action == 'deploy':
-                        ok, err = canary_policy_group.deploy()
-                        app.set_canary_policy_group(procname, canary_policy_group.to_dict())
-                    elif canary_policy_group.action == 'undeploy':
-                        ok, err = canary_policy_group.undeploy()
-                        app.remove_canary_policy_group(procname)
-                    if not ok:
-                        deploy_result.status_code = 400
-                        deploy_result.content = err
-                    else:
-                        deploy_result.status_code = 200
                 pg_status_new = app.podgroup_status(new_podgroup_spec.Name)
                 if deploy_result.status_code < 400:
                     return (202, ProcApi.render_proc_data(appname, proc, pg_status_new),
@@ -1574,166 +1521,3 @@ class NotifyApi:
             return (400, None, '', reverse('api_notify', kwargs={'notify_type': notify_type}))
         else:
             return (200, resp, '', reverse('api_notify', kwargs={'notify_type': notify_type}))
-
-
-class CanaryProc:
-    '''
-    canary proc in console
-    '''
-
-    def __init__(self, proc):
-        '''
-        proc: {"action": $action, "image_version": $image_version, "secret_files": $secret_files}
-        '''
-        self.action = proc.get('action')
-        self.image_version = proc.get('image_version')
-        self.secret_files = proc.get('secret_files')
-
-    def is_valid(self):
-        '''
-        return: ok, error_message
-        '''
-        if self.action not in ['deploy', 'undeploy']:
-            return False, 'invalid action: {}'.format(self.action)
-
-        if self.action == "deploy":
-            if self.image_version is None or not is_valid_image_version(
-                    self.image_version):
-                return False, 'invalid image_version: {}'.format(
-                    self.image_version)
-
-            if not isinstance(self.secret_files, list):
-                return False, 'invalid secret_files: {}'.format(self.secret_files)
-
-        return True, ''
-
-    def to_dict(self):
-        return {
-            "image_version": self.image_version,
-            "secret_files": self.secret_files,
-            "image": self.image,
-        }
-
-    def gen_podgroup_spec(self, token, original_pod_group_spec):
-        '''
-        original_pod_group_spec: apis.spec.PodGroupSpec related to this CanaryProc
-        '''
-        logger.info('>>> original_pod_group_spec: {}'.format(json.dumps(json_of_spec(original_pod_group_spec))))
-        canary_pod_group_spec = original_pod_group_spec.clone()
-        new_pg_name = self.__get_new_pod_group_name(canary_pod_group_spec.Name)
-        canary_pod_group_spec.Name = new_pg_name
-        canary_pod_group_spec.Pod.Name = new_pg_name
-        self.image = self.__get_new_image(token, canary_pod_group_spec)
-        canary_pod_group_spec.Pod.Containers[0].Image = self.image
-        annotation = self.__get_new_annotation(original_pod_group_spec.Pod.Annotation)
-        canary_pod_group_spec.Pod.Annotation = json.dumps(annotation)
-        canary_pod_group_spec.NumInstances = 1  # default: 1
-        logger.info('>>> canary_pod_group_spec: {}'.format(json.dumps(json_of_spec(canary_pod_group_spec))))
-        return canary_pod_group_spec
-
-    def __get_new_pod_group_name(self, name):
-        return '{}_canary'.format(name)
-
-    def __get_new_annotation(self, original_annotation):
-        annotation = json.loads(original_annotation)
-        annotation['mountpoint'] = []
-        return annotation
-
-    def __get_new_base_image(self, original_release_image):
-        '''
-        original_release_image: for example, 'registry.lain.local/entry:release-1524455982-f478328a58bc9725c19030e7663e2ee3fa87b02c-web-config-1522058193'
-        new_image_version: for example, '1524457612-6144fc766d742d93efbacac5d6886d1267747fe9'
-        return: for example, 'registry.lain.local/entry:release-1524457612-6144fc766d742d93efbacac5d6886d1267747fe9'
-        '''
-        registry, repo_and_tag = original_release_image.split('/')
-        repo, tag = repo_and_tag.split(':')
-        xs = tag.split('-')
-        return '{}/{}:{}-{}'.format(registry, repo, xs[0], self.image_version)
-
-    def __get_new_image(self, token, pod_group_spec):
-        '''
-        add secret_files
-        '''
-        original_release_image = pod_group_spec.Pod.Containers[
-            0].Image
-        base_image = self.__get_new_base_image(original_release_image)
-        if self.secret_files is None or len(self.secret_files) == 0:
-            return base_image
-
-        pg_name = pod_group_spec.Name
-        appname = pg_name.split('.')[0]
-        config_list = Config.get_configs(token, appname, pg_name)
-        config_list, timestamp = Config.validate_defined_secret_files(
-            config_list, self.secret_files)
-        app = App.get_or_none(appname)
-        config_tag = ConfigApi.get_config_image(
-            app, config_list, self.secret_files, pg_name, timestamp)
-        new_image = ConfigApi.gen_release_image(app, base_image, config_tag,
-                                                len(config_list))
-        return '{}/{}'.format(PRIVATE_REGISTRY, new_image)
-
-
-class CanaryPolicyGroup:
-    '''
-    canary policy group in console
-    '''
-
-    def __init__(self, policy_group, previous_policy_group_id):
-        '''
-        policy_group: {"action": $action, "mountpoints": $mountpoints, "rules": $rules}
-        $rules: {"1":{"divtype":"uidappoint","divdata":[{"uidset":[1234,5124],"upstream":"beta1"},{"uidset":[3214,652],"upstream":"beta2"}]},"2":{"divtype":"iprange","divdata":[{"range":{"start":1111,"end":2222},"upstream":"beta1"},{"range":{"start":3333,"end":4444},"upstream":"beta2"}]}}
-        '''
-        self.action = policy_group.get('action')
-        self.mountpoints = policy_group.get('mountpoints')
-        self.rules = ABTestPolicyGroup(policy_group.get('rules'))
-        self.id_ = previous_policy_group_id
-
-    def is_valid(self):
-        if self.action not in ['deploy', 'undeploy']:
-            return False, 'invalid action: {}'.format(self.action)
-
-        if self.action == 'deploy':
-            if not isinstance(self.mountpoints, list):
-                return False, 'invalid mounpoints: {}'.format(self.mountpoints)
-
-            if not self.rules.is_valid():
-                return False, 'invalid rules: {}'.format(self.rules.to_json())
-
-            # self.id_ is optional
-
-        return True, ''
-
-    def deploy(self):
-        '''
-        return: ok, error_message
-        '''
-        self.undeploy()
-        ok, id_or_err = ABTest.add_policy_group(self.rules)
-        if not ok:
-            return False, id_or_err
-
-        self.id_ = id_or_err
-        for m in self.mountpoints:
-            ok, err = ABTest.active_mountpoint(m, id_or_err)
-            if not ok:
-                return False, err
-
-        return True, ''
-
-    def undeploy(self):
-        '''
-        return: ok, error_message
-        '''
-        if self.id_ is not None:
-            for m in self.mountpoints:
-                if ABTest.is_active_mountpoint(m):
-                    ABTest.deactive_mountpoint(m)
-            return ABTest.delete_policy_group(self.id_)
-        return True, ''
-
-    def to_dict(self):
-        return {
-            'mountpoints': self.mountpoints,
-            'id': self.id_,
-            'rules': self.rules.to_dict(),
-        }

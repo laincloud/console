@@ -1,6 +1,5 @@
 # -*- coding: utf-8
 
-import copy
 import yaml
 import json
 import re
@@ -47,7 +46,6 @@ class BaseApp:
     default_image = ''
     running_state = ''
     app_type = ''
-    canaries = {}  # 灰度发布 {$procname: {"canary_proc": .views.CanaryProc.to_dict(), "policy_group": .views.CanaryPolicyGroup.to_dict()}}
     last_error = ''
     last_update = ''
 
@@ -73,7 +71,6 @@ class BaseApp:
             default_image = app_info.get('default_image', '')
             running_state = app_info.get('running_state', None)
             app_type = app_info.get('app_type', None)
-            canaries = app_info.get('canaries', {})
             last_update = app_info.get('last_update', '')
             last_error = app_info.get('last_error', '')
             if appname == '':
@@ -86,7 +83,6 @@ class BaseApp:
             app.default_image = default_image
             app.running_state = running_state
             app.app_type = app_type
-            app.canaries = canaries
             app.last_update = last_update
             app.last_error = last_error
 
@@ -165,7 +161,6 @@ class BaseApp:
             'default_image': self.default_image,
             'running_state': self.running_state,
             'app_type': self.app_type,
-            'canaries': self.canaries,
             'last_update': self.last_update,
             'last_error': self.last_error,
         })
@@ -183,10 +178,6 @@ class BaseApp:
         config = LainConf()
         config.load(self.meta, self.meta_version, self.default_image,
                     registry=PRIVATE_REGISTRY, domains=get_domains())
-        for procname in self.canaries:
-            canary_proc_conf = self.__get_canary_proc_conf(config, procname)
-            if canary_proc_conf:
-                config.procs[canary_proc_conf.name] = canary_proc_conf
         return config
 
     @property
@@ -373,65 +364,6 @@ class BaseApp:
             if release_version in self.registry_tags:
                 return True, latest_version
         return False, None
-
-    def __get_canary_proc(self, procname):
-        return self.canaries.get(procname, {}).get('canary_proc')
-
-    def __get_canary_proc_conf(self, lain_config, procname):
-        canary_proc = self.__get_canary_proc(procname)
-        if not canary_proc:
-            return None
-
-        proc_conf = lain_config.procs.get(procname)
-        if not proc_conf:
-            return None
-
-        canary_proc_conf = copy.deepcopy(proc_conf)
-        canary_proc_conf.name += '_canary'
-        canary_proc_conf.image = canary_proc['image']
-        canary_proc_conf.secret_files = canary_proc['secret_files']
-        return canary_proc_conf
-
-    def set_canary_proc(self, procname, canary_proc):
-        '''
-        canary_proc: .views.CanaryProc.to_dict()
-        '''
-        canary = self.canaries.get(procname, {})
-        canary['canary_proc'] = canary_proc
-        self.canaries[procname] = canary
-        self.save()
-        config = self.lain_config
-        canary_proc_conf = self.__get_canary_proc_conf(config, procname)
-        config.procs[canary_proc_conf.name] = canary_proc_conf
-        self._app_spec = render_app_spec(config)
-
-    def remove_canary_proc(self, procname):
-        if not self.__get_canary_proc(procname):
-            return
-
-        del self.canaries[procname]['canary_proc']
-        self.save()
-
-    def __get_canary_policy_group(self, procname):
-        return self.canaries.get(procname, {}).get('policy_group')
-
-    def set_canary_policy_group(self, procname, canary_policy_group):
-        '''
-        canary_policy_group: .views.CanaryPolicyGroup.to_dict()
-        '''
-        canary = self.canaries.get(procname, {})
-        canary['policy_group'] = canary_policy_group
-        self.canaries[procname] = canary
-        self.save()
-
-    def remove_canary_policy_group(self, procname):
-        if not self.__get_canary_policy_group(procname):
-            return
-        del self.canaries[procname]['policy_group']
-        self.save()
-
-    def get_canary_policy_group_id(self, procname):
-        return self.canaries.get(procname, {}).get('policy_group', {}).get('id')
 
     def __unicode__(self):
         return '<%s:%s>' % (self.appname, self.meta_version)

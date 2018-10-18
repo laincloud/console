@@ -238,10 +238,9 @@ def api_proc_high_permit(request, appname, procname):
         try:
             options = json.loads(request.body)
             operation = options.get('operation', 'schedule')
-            access_token = request.META.get('HTTP_ACCESS_TOKEN', 'unknown')
             if operation == 'schedule':
                 status_code, view_object, msg, url = ProcApi.update_app_proc(
-                    access_token, appname, procname, options)
+                    appname, procname, options)
             else:
                 status_code, view_object, msg, url = ProcApi.operate_proc(
                     appname, procname, operation, options)
