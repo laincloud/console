@@ -38,6 +38,7 @@ class Authorize:
     @classmethod
     def authorize_registry(cls, request):
         info = authorize.registry.parse_request(request)
+        logger.debug(info.username, info.password, info.appname, info.account, info.actions, info.client_ip, info.service, info.types)
         if info.actions is not None and \
            len(info.actions) == 1 and \
            str(info.actions[0]) == 'pull':

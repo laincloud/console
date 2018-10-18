@@ -75,6 +75,7 @@ def generate_config_file(folder, config):
 
 def generate_config_image(folder, appname, config_tag):
     tag = '%s/%s:%s' % (PRIVATE_REGISTRY, appname, config_tag)
+    logger.info("build tag is: %s", tag)
     results = cli.build(path=folder, rm=True, tag=tag)
     for line in results:
         logger.info(line)
@@ -85,13 +86,16 @@ def remove_folder(folder):
 
 
 def push_config_image(appname, config_tag):
+    logger.info("push_config_image:repository=%s/%s, tag=%s", PRIVATE_REGISTRY, appname, config_tag)
     results = cli.push(
         repository="%s/%s" % (PRIVATE_REGISTRY, appname),
         tag=config_tag,
+        stream=True,
         insecure_registry=True
     )
-    logger.info(results)
-
+    #logger.info(results)
+    for item in results:
+        logger.debug(item)
 
 def overlap_layer_to_image(appname, cfg_tag, cfg_layer_count, sjwt, target_repo, target_tag, tjwt):
     logger.info("overlap %s:%s in %s to repo %s:%s in %s" % (
